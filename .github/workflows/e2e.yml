@@ -1,0 +1,69 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Start server in background
+        working-directory: server
+        run: |
+          # start server and write pid
+          npm start &> /tmp/server.log &
+          echo $! > /tmp/server.pid
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:5000 --timeout 30000
+
+      - name: Setup Playwright (browsers)
+        uses: microsoft/playwright-github-action@v1
+        with:
+          install-deps: true
+          browsers: all
+
+      - name: Install client deps
+        working-directory: client
+        run: npm ci
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
+
+      - name: Serve client in background
+        working-directory: client
+        run: |
+          # serve the static build on port 3000
+          npx serve -s build -l 3000 &> /tmp/client.log &
+          echo $! > /tmp/client.pid
+
+      - name: Wait for client
+        run: npx wait-on http://localhost:3000 --timeout 30000
+
+      - name: Run Playwright tests
+        working-directory: client
+        env:
+          CI: true
+        run: npm run e2e
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f /tmp/server.pid ]; then kill $(cat /tmp/server.pid) || true; fi
+          if [ -f /tmp/client.pid ]; then kill $(cat /tmp/client.pid) || true; fi

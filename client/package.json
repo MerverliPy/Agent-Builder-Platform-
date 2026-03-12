@@ -1,0 +1,36 @@
+{
+  "name": "cabp-client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@playwright/test": "^1.58.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom --watchAll=false",
+    "e2e": "playwright test",
+    "serve-build": "serve -s build -l 3000"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1"
+  },
+  "dependencies": {
+    "serve": "^14.0.1"
+  },
+  "proxy": "http://localhost:5000",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

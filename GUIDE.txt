@@ -1,0 +1,143 @@
+Guide: Run CABP locally and expose on a Tailscale IP
+
+Overview
+--------
+This guide explains how to run the Custom Agent Builder Platform (CABP) locally and expose it on a Tailscale IP so you and other Tailscale-connected machines can access the UI and API remotely.
+
+Files added to help:
+- `scripts/dev-start.sh` — installs deps, starts server bound to a given IP, builds and serves the client build, and waits for readiness. Writes PIDs to `/tmp/cabp-server.pid` and `/tmp/cabp-client.pid`.
+- `scripts/dev-stop.sh` — stops background processes created by `dev-start.sh`.
+
+Prerequisites
+-------------
+- A machine on the same Tailscale network with the desired Tailscale IP (example: `100.81.83.98`).
+- Node.js 18.x and npm installed. Verify with `node -v` and `npm -v`.
+- Optional but recommended: `npx` (comes with npm), and `wait-on` will be invoked via npx; it's not required to be installed globally.
+
+Security note
+-------------
+The server signs JWTs with `JWT_SECRET`. Do not expose the app to any network without setting a strong `JWT_SECRET`. If you do not set it, the app uses the insecure default `dev-secret`.
+
+Quick start (recommended)
+-------------------------
+1. Open a terminal on the machine that will host the app (must have the Tailscale IP assigned).
+2. From the repo root, export a strong JWT secret (example):
+
+   export JWT_SECRET="replace-with-a-strong-secret"
+
+3. Run the helper script to start server and client bound to the Tailscale IP (default shown):
+
+   ./scripts/dev-start.sh 100.81.83.98
+
+   - If you omit the IP, the script defaults to `100.81.83.98`.
+   - The script performs `npm ci` in `server` and `client`, builds the client, starts the server bound to the specified IP on port 5000, and serves the client at port 3000.
+   - Logs: server -> `/tmp/cabp-server.log`, client -> `/tmp/cabp-client.log`.
+   - PIDs: `/tmp/cabp-server.pid`, `/tmp/cabp-client.pid`.
+
+4. Wait until the script prints the started URLs. You can also check readiness:
+
+   curl http://100.81.83.98:5000/health || curl http://100.81.83.98:5000
+
+5. From any machine on the same Tailscale network open the UI:
+
+   http://100.81.83.98:3000
+
+   Or access the API directly:
+
+   http://100.81.83.98:5000/api/
+
+Stopping the app
+-----------------
+To stop the server and client started by the script:
+
+  ./scripts/dev-stop.sh
+
+Or manually (if the PID files were removed):
+
+  kill <server-pid> || true
+  kill <client-pid> || true
+
+Troubleshooting
+---------------
+- If the client can't reach the API, ensure the server is running and that `JWT_SECRET` was provided when starting the server.
+- If `./scripts/dev-start.sh` fails while installing deps, ensure the host machine has network access and sufficient permissions.
+- If Tailscale IP isn't available on the machine, run `tailscale ip -4` or check `tailscale status` to find assigned IPs. Use the IP that is bound to the machine.
+
+Optional improvements
+---------------------
+1) Docker Compose: I can add a `docker-compose.yml` that runs server+client as containers and binds ports to the host Tailscale IP.
+2) systemd service: create a systemd user service to run the server persistently.
+3) Add an env file and a start script that avoids reinstalling deps on every run.
+
+If you want me to create Docker Compose or a systemd unit, tell me which and I'll add it.
+
+End of guide
+
+Docker Compose
+--------------
+I added a `docker-compose.yml` and Dockerfiles for `server` and `client`. Use Docker Compose when you want a simple, repeatable way to run the platform and keep it running.
+
+Quick Docker steps (on the host that has the Tailscale IP):
+
+1. Export a strong JWT secret (example):
+
+   export JWT_SECRET="replace-with-a-strong-secret"
+
+2. Start services (build images first time):
+
+   docker-compose up --build -d
+
+3. Access the app from a machine on the same Tailscale network:
+
+   - Frontend: http://100.81.83.98:3000
+   - API:     http://100.81.83.98:5000
+
+4. Stop services:
+
+   docker-compose down
+
+Notes:
+- The compose file uses `network_mode: host` so the containers bind to the host network interfaces (convenient for Tailscale). This means the services are reachable at the host's IPs and ports.
+- Make sure `JWT_SECRET` is set in the environment or in an env file you supply to Compose if you plan to expose the service.
+
+Systemd (persistent service)
+----------------------------
+If you want the platform to start automatically on boot and be managed by systemd, create a unit file that runs Docker Compose. Replace `/path/to/repo` with the absolute path to this repository on your host.
+
+Example unit file `/etc/systemd/system/cabp.service`:
+
+```
+[Unit]
+Description=Custom Agent Builder Platform (CABP)
+After=network.target docker.service
+
+[Service]
+Type=notify
+WorkingDirectory=/path/to/repo
+Environment=JWT_SECRET=replace-with-a-strong-secret
+TimeoutStartSec=300
+ExecStart=/usr/bin/docker-compose up --build
+ExecStop=/usr/bin/docker-compose down
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Commands to enable and start the service:
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable --now cabp.service
+sudo journalctl -u cabp.service -f
+```
+
+Security & best practices for systemd:
+- Prefer using an external env file with restricted permissions for secrets. Example: create `/etc/cabp.env` with `JWT_SECRET=...` and reference it with `EnvironmentFile=/etc/cabp.env` in the unit file.
+- Running Docker Compose as root via systemd is common; if you want a less-privileged approach, create a dedicated user and use `User=` in the unit file and ensure that user can control Docker (e.g., in `docker` group).
+
+Final notes
+-----------
+- Choose Docker Compose + systemd if you want a production-like deployment that auto-starts and is straightforward to manage.
+- If you'd like, I can add the example systemd unit file into the repository (templated) and update the `GUIDE.txt` with an exact `EnvironmentFile` example and a `docker-compose.override.yml` for local development.
