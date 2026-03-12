@@ -1,0 +1,22 @@
+[Unit]
+Description=CABP Node Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/calvin/Repo1/server
+EnvironmentFile=/etc/cabp.env
+# Ensure a sensible PATH for systemd (installer will replace PATH if node is detected)
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+# Run the server directly with node to avoid relying on npm availability in PATH
+ExecStart=/usr/bin/env node src/index.js
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/cabp-server.log
+StandardError=append:/var/log/cabp-server.log
+# The installer replaces REPLACE_USER with the user who owns the checkout
+User=REPLACE_USER
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

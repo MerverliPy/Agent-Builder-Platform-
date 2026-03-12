@@ -1,0 +1,20 @@
+[Unit]
+Description=CABP Static Client Server (Node)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/calvin/Repo1/client
+EnvironmentFile=/etc/cabp.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/env node static-server.js
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/cabp-client.log
+StandardError=append:/var/log/cabp-client.log
+# The installer replaces REPLACE_USER with the user who owns the checkout
+User=REPLACE_USER
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

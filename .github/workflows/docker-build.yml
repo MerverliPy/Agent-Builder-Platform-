@@ -1,0 +1,72 @@
+name: Docker Build & Smoke Test
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    name: Build images and run smoke tests
+    runs-on: ubuntu-latest
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build server image
+        run: |
+          echo "Building server image..."
+          docker build --progress=plain -t cabp-server:ci ./server
+
+      - name: Build client image
+        run: |
+          echo "Building client image..."
+          docker build --progress=plain -t cabp-client:ci ./client
+
+      - name: Start server container
+        run: |
+          echo "Starting server container..."
+          docker run -d --rm -p 5000:5000 -e JWT_SECRET="$JWT_SECRET" --name cabp-server-ci cabp-server:ci
+
+      - name: Wait for server health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sSf http://localhost:5000/api/health >/dev/null 2>&1; then
+              echo "Server healthy"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not become healthy" >&2
+          docker logs cabp-server-ci || true
+          exit 1
+
+      - name: Stop server
+        if: always()
+        run: |
+          docker stop cabp-server-ci || true
+
+      - name: Start client container
+        run: |
+          echo "Starting client container..."
+          docker run -d --rm -p 3000:3000 --name cabp-client-ci cabp-client:ci
+
+      - name: Wait for client
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sSf http://localhost:3000 >/dev/null 2>&1; then
+              echo "Client serving"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Client did not start" >&2
+          docker logs cabp-client-ci || true
+          exit 1
+
+      - name: Stop client
+        if: always()
+        run: |
+          docker stop cabp-client-ci || true
