@@ -2,6 +2,35 @@
  * Test utilities and helpers for E2E tests
  */
 
+const API_BASE = process.env.VITE_API_BASE || 'http://localhost:5000/api'
+
+/**
+ * Reset the database by deleting all users and agents.
+ * This should be called in beforeEach/beforeAll to ensure test isolation.
+ * 
+ * NOTE: Requires ENABLE_TEST_ROUTES=true on the server.
+ */
+export async function resetDatabase() {
+  try {
+    const response = await fetch(`${API_BASE}/test/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    
+    if (!response.ok) {
+      console.warn('Database reset failed:', response.status, await response.text())
+      return { success: false }
+    }
+    
+    const result = await response.json()
+    console.log('Database reset:', result)
+    return result
+  } catch (error) {
+    console.warn('Database reset error:', error.message)
+    return { success: false, error: error.message }
+  }
+}
+
 export async function clearAuthToken(page) {
   try {
     await page.evaluate(() => {

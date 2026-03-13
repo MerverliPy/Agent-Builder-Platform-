@@ -1,7 +1,13 @@
 const { test, expect } = require('@playwright/test');
-const { clearAuthToken, setAuthToken, getAuthToken, generateUniqueEmail, fillAuthFields } = require('./utils');
+const { clearAuthToken, setAuthToken, getAuthToken, generateUniqueEmail, fillAuthFields, resetDatabase } = require('./utils');
 
-// Helper to login before each test
+test.describe('Agent CRUD E2E Tests', () => {
+  test.beforeAll(async () => {
+    // Reset database before running CRUD tests to ensure clean state
+    await resetDatabase();
+  });
+
+  // Helper to login before each test
 async function loginBeforeTest(page) {
   const email = 'crud-test@example.com';
   const password = 'TestPassword123!';

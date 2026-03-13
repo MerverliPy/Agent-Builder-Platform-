@@ -1,7 +1,12 @@
 const { test, expect } = require('@playwright/test');
-const { fillAuthFields } = require('./utils');
+const { fillAuthFields, resetDatabase } = require('./utils');
 
 test.describe('Error Handling E2E Tests', () => {
+  test.beforeAll(async () => {
+    // Reset database before running error tests to ensure clean state
+    await resetDatabase();
+  });
+
   test('should show validation error for empty name field', async ({ page }) => {
     // Register and login
     const email = 'error-test@example.com';

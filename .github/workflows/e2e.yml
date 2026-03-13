@@ -24,6 +24,8 @@ jobs:
 
       - name: Start server in background
         working-directory: server
+        env:
+          ENABLE_TEST_ROUTES: 'true'
         run: |
           # start server and write pid
           npm start &> /tmp/server.log &

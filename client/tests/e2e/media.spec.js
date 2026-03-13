@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { resetDatabase } = require('./utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,6 +16,8 @@ async function loginBeforeTest(page) {
 }
 
 test.describe('Media Upload E2E Tests', () => {
+  test.beforeAll(resetDatabase);
+
   test.beforeEach(async ({ page }) => {
     // Register user if needed
     const email = 'media-test@example.com';

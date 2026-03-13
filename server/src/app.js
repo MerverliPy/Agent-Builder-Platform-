@@ -20,6 +20,14 @@ function createApp() {
   app.use('/api/auth', authRouter)
   app.use('/api/agents', agentsRouter)
   app.use('/api/media', mediaRouter)
+  
+  // Test helpers - ONLY enable in test/development environments
+  if (process.env.NODE_ENV === 'test' || process.env.ENABLE_TEST_ROUTES === 'true') {
+    const testHelpersRouter = require('./routes/testHelpers')
+    app.use('/api/test', testHelpersRouter)
+    console.log('⚠️  Test helper routes enabled at /api/test')
+  }
+  
   mountUploads(app)
 
   const errorHandler = require('./middleware/errorHandler')

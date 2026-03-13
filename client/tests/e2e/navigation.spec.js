@@ -1,7 +1,9 @@
 const { test, expect } = require('@playwright/test');
-const { clearAuthToken } = require('./utils');
+const { clearAuthToken, resetDatabase } = require('./utils');
 
 test.describe('Navigation and Routing E2E Tests', () => {
+  test.beforeAll(resetDatabase);
+
   test('should load home page successfully', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');

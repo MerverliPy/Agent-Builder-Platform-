@@ -1,7 +1,12 @@
 const { test, expect } = require('@playwright/test');
-const { clearAuthToken, setAuthToken, getAuthToken, getCurrentUser, generateUniqueEmail, fillAuthFields } = require('./utils');
+const { clearAuthToken, setAuthToken, getAuthToken, getCurrentUser, generateUniqueEmail, fillAuthFields, resetDatabase } = require('./utils');
 
 test.describe('Authentication E2E Tests', () => {
+  test.beforeAll(async () => {
+    // Reset database before running auth tests to ensure clean state
+    await resetDatabase();
+  });
+
   test.beforeEach(async ({ page }) => {
     // Clear any existing auth data
     await clearAuthToken(page);
