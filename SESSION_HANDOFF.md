@@ -35,12 +35,19 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
   - Updated GitHub Actions secret (set on 2026-03-13)
   - Secret value: `KvSTAg6dBxxpSvcQ0SUgVV7Qjxh6Sh/0NKhiVzix0MY=`
   - NOTE: Use this same value for `/etc/cabp.env` on host
+- **✅ Installed and verified systemd units on host**:
+  - Created `/etc/cabp.env` with JWT_SECRET and HOST=0.0.0.0
+  - Updated systemd units to use full path to nvm node binary (`/home/calvin/.nvm/versions/node/v20.20.1/bin/node`)
+  - Configured server on port 5000, client on port 3000
+  - Both services running and enabled on boot
+  - Server health check: `http://100.81.83.98:5000/api/health` ✓
+  - Client serving: `http://100.81.83.98:3000` ✓
+  - Logs: `/var/log/cabp-server.log` and `/var/log/cabp-client.log`
 
 ## Pending Work
 
-- Install systemd units on host, verify `cabp-server` and `cabp-client` services.
-- Verify remote access via Tailscale.
 - Optional: migrate tests to Vitest, re-run E2E with artifact capture.
+- Optional: improve systemd unit installer to better detect nvm node paths.
 
 ## Relevant Files
 
@@ -48,35 +55,53 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
 - Dev scripts: `scripts/dev-start.sh`, `scripts/dev-stop.sh`
 - Server: `server/` (sources: `server/src/`, tests: `server/test/`, `server/Dockerfile`)
 - Client: `client/` (sources: `client/src/`, `client/package.json`, `client/vite.config.js`, `client/index.html`)
-- Systemd: `systemd/` (`install-systemd.sh`, unit templates)
+- Systemd: `systemd/` (`install-systemd.sh`, unit templates), `/etc/systemd/system/cabp-*.service`
 - CI: `.github/workflows/ci.yml`, `.github/workflows/docker-build.yml`, `.github/workflows/e2e.yml`
-- Docs: `startup.txt`, `SESSION_HANDOFF.md`, `TODO.md`, `client/vite-migration-plan.md`
+- Docs: `startup.txt`, `SESSION_HANDOFF.md`, `TODO.md`, `ARCHITECTURE.md`, `client/vite-migration-plan.md`
+- Logs: `/var/log/cabp-server.log`, `/var/log/cabp-client.log`
 
-## Commands to Run
+## Service Management
 
-Systemd install on host (as root):
+Check service status:
 ```
-sudo tee /etc/cabp.env > /dev/null <<EOF
-JWT_SECRET=KvSTAg6dBxxpSvcQ0SUgVV7Qjxh6Sh/0NKhiVzix0MY=
-HOST=0.0.0.0
-PORT=3000
-EOF
-sudo chmod 600 /etc/cabp.env
-sudo bash /home/calvin/Repo1/systemd/install-systemd.sh
-sudo systemctl daemon-reload
+sudo systemctl status cabp-server.service cabp-client.service
+```
+
+View logs:
+```
+sudo tail -f /var/log/cabp-server.log
+sudo tail -f /var/log/cabp-client.log
+```
+
+Restart services:
+```
 sudo systemctl restart cabp-server.service cabp-client.service
-sudo systemctl status cabp-server.service --no-pager
 ```
+
+## Access Points
+
+- Server API: `http://100.81.83.98:5000/api/`
+- Server Health: `http://100.81.83.98:5000/api/health`
+- Client UI: `http://100.81.83.98:3000`
 
 ## Known Issues
 
+- Systemd installer doesn't automatically detect nvm node paths (manual fix required).
 - Client build output: `build/` → `dist/` (all references updated).
 - Tests use `react-scripts test` (Jest); Vitest migration optional.
 - Dev dependencies have 26 vulnerabilities from react-scripts (dev only, not in production).
 - CI requires Node.js 20.x (Vite 8 requirement).
-- Systemd install requires sudo on host.
 - Docker Compose uses `network_mode: host` (Linux-only).
 
-## Exact Next Step
+## Production Deployment Complete ✅
 
-Install systemd units on host (requires sudo access to host machine). See commands above.
+All operational tasks for production deployment have been completed:
+- ✅ Docker builds verified on CI
+- ✅ JWT secret rotated
+- ✅ Systemd units installed and running
+- ✅ Services accessible via Tailscale
+
+Optional follow-up work:
+- Migrate client tests from Jest to Vitest for full Vite stack consistency
+- Re-run Playwright E2E tests with artifact capture
+- Improve systemd installer to auto-detect nvm node paths

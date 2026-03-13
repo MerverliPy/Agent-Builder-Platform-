@@ -1,11 +1,10 @@
 # Project TODO
 
 ## High Priority
-- Run systemd installer on host and verify `cabp-server` and `cabp-client` services start on boot.
-- Ensure systemd units point to correct Node binary/environment for the host.
-- Verify production startup: systemd services bind to Tailscale IP and UI/API are reachable remotely.
+- None! All critical production deployment tasks are complete.
 
 ## Medium Priority
+- Improve systemd installer to auto-detect nvm node paths.
 - Migrate client tests to Vitest for full Vite stack consistency.
 - Re-run Playwright E2E tests with artifact capture enabled.
 - Add Dependabot or Renovate for automated dependency updates.
@@ -45,3 +44,7 @@
 - Deleted fix/client-audit branch locally and remotely.
 - Rotated JWT_SECRET in GitHub Actions (32-byte base64, set 2026-03-13).
 - Documented JWT_SECRET value in SESSION_HANDOFF.md for host systemd installation.
+- Installed systemd units on host with nvm node paths.
+- Configured server (port 5000) and client (port 3000) services.
+- Verified services running and accessible via Tailscale (100.81.83.98).
+- Production deployment complete: Docker builds pass, JWT rotated, systemd running.
