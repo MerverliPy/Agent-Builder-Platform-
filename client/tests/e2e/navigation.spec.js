@@ -15,7 +15,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/');
     
     // Click login link
-    const loginLink = await page.$('a:has-text("Login"), button:has-text("Login")');
+    const loginLink = await page.$('a:has-text("Login"), [data-testid="login-submit"]');
     if (loginLink) {
       await loginLink.click();
       await page.waitForURL(/login/);
@@ -43,7 +43,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/register');
     const { fillAuthFields } = require('./utils');
     await fillAuthFields(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation();
 
     // Login
@@ -51,7 +51,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields: fillLoginFields } = require('./utils');
     await fillLoginFields(page, email, password);
-    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     // Should be on dashboard or agents page
@@ -67,7 +67,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields: fillLoginFields2 } = require('./utils');
     await fillLoginFields2(page, email, password);
-    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     // Navigate to agents
@@ -91,7 +91,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields: fillLoginFields3 } = require('./utils');
     await fillLoginFields3(page, email, password);
-    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     // Navigate to create agent
@@ -110,7 +110,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields: fillLoginFields4 } = require('./utils');
     await fillLoginFields4(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     const initialUrl = page.url();
@@ -150,7 +150,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields: fillLoginFields5 } = require('./utils');
     await fillLoginFields5(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     // Check for navigation elements
@@ -177,7 +177,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     await page.goto('/login');
     const { fillAuthFields } = require('./utils');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation();
 
     // Navigate to agents with multiple items

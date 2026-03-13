@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { fillAuthFields, usernameSelector, passwordSelector, confirmSelector } = require('./utils');
+const { fillAuthFields } = require('./utils');
 
 test.describe('Error Handling E2E Tests', () => {
   test('should show validation error for empty name field', async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe('Error Handling E2E Tests', () => {
     try {
       await page.goto('/register');
       await fillAuthFields(page, email, password, password);
-      await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+      await page.click('[data-testid="register-submit"]');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
       // User might already exist
@@ -18,14 +18,14 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation({ timeout: 3000 });
 
     // Navigate to create agent
     await page.goto('/agents/new');
 
     // Try to submit form without name
-    const submitButton = await page.$('button:has-text("Create"), button:has-text("Save")');
+    const submitButton = await page.$('[data-testid="agentform-submit"]');
     if (submitButton) {
       await submitButton.click();
 
@@ -34,7 +34,7 @@ test.describe('Error Handling E2E Tests', () => {
       
     // Check for error message or form still visible
     const errorVisible = await page.isVisible('text=Required, text=Please enter, text=Name is required');
-    const formVisible = await page.isVisible('input[data-testid="agent-name"], input[placeholder*="name" i]');
+    const formVisible = await page.isVisible('[data-testid="agent-name"]');
       
       expect(errorVisible || formVisible).toBeTruthy();
     }
@@ -47,10 +47,10 @@ test.describe('Error Handling E2E Tests', () => {
     await fillAuthFields(page, 'not-an-email', 'TestPassword123!', 'TestPassword123!');
 
     // Try to submit
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await page.click('[data-testid="register-submit"]');
 
     // Should show validation error or HTML5 validation message
-    const emailInput = await page.$(usernameSelector);
+    const emailInput = await page.$('[data-testid="register-username"]');
     const isInvalid = await emailInput.evaluate(el => !el.validity.valid);
 
     expect(isInvalid).toBeTruthy();
@@ -63,14 +63,14 @@ test.describe('Error Handling E2E Tests', () => {
     await fillAuthFields(page, email, 'TestPassword123!', 'DifferentPassword456!');
 
     // Try to submit
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await page.click('[data-testid="register-submit"]');
 
     // Should show error or stay on form
     await page.waitForTimeout(1000);
     
     // Check for error message or form still visible
     const errorVisible = await page.isVisible('text=do not match, text=Passwords must match');
-    const formVisible = await page.isVisible(confirmSelector);
+    const formVisible = await page.isVisible('[data-testid="register-confirm-password"]');
     
     expect(errorVisible || formVisible).toBeTruthy();
   });
@@ -82,13 +82,13 @@ test.describe('Error Handling E2E Tests', () => {
     // First registration
     await page.goto('/register');
     await fillAuthFields(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation({ timeout: 3000 }).catch(() => {});
 
     // Try to register with same email
     await page.goto('/register');
     await fillAuthFields(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await page.click('[data-testid="register-submit"]');
 
     // Should show error
     await page.waitForTimeout(2000);
@@ -108,7 +108,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
 
     // Should show error message
     await page.waitForTimeout(2000);
@@ -139,7 +139,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation({ timeout: 3000 });
 
     // Try to access non-existent agent
@@ -166,7 +166,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
 
     // Should show error or timeout message
     await page.waitForTimeout(3000);
@@ -183,7 +183,7 @@ test.describe('Error Handling E2E Tests', () => {
     try {
       await page.goto('/register');
       await fillAuthFields(page, email, password, password);
-      await page.click('button:has-text("Register")');
+      await page.click('[data-testid="register-submit"]');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
       // User might already exist
@@ -191,14 +191,14 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation({ timeout: 3000 });
 
     // Navigate to create agent
     await page.goto('/agents/new');
 
     // Start typing name
-    const nameInput = await page.$('input[data-testid="agent-name"], input[placeholder*="name" i], input[name="name"]');
+    const nameInput = await page.$('[data-testid="agent-name"]');
     if (nameInput) {
       await nameInput.type('A');
       
@@ -219,7 +219,7 @@ test.describe('Error Handling E2E Tests', () => {
     try {
       await page.goto('/register');
       await fillAuthFields(page, email, password, password);
-      await page.click('button:has-text("Register")');
+      await page.click('[data-testid="register-submit"]');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
       // User might already exist
@@ -227,7 +227,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
     await page.waitForNavigation({ timeout: 3000 });
 
     // Navigate to agents page
@@ -267,7 +267,7 @@ test.describe('Error Handling E2E Tests', () => {
     // First attempt fails
     await page.goto('/login');
     await fillAuthFields(page, email, password);
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
 
     // Error should be shown
     await page.waitForTimeout(2000);

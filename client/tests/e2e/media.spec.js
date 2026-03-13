@@ -10,7 +10,7 @@ async function loginBeforeTest(page) {
   await page.goto('/login');
   const { fillAuthFields } = require('./utils');
   await fillAuthFields(page, email, password);
-  await page.click('button:has-text("Login")');
+  await page.click('[data-testid="login-submit"]');
   await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 }
 
@@ -24,7 +24,7 @@ test.describe('Media Upload E2E Tests', () => {
       await page.goto('/register');
       const { fillAuthFields } = require('./utils');
       await fillAuthFields(page, email, password, password);
-      await page.click('button:has-text("Register")');
+      await page.click('[data-testid="register-submit"]');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
       // User might already exist
