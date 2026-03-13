@@ -1,0 +1,44 @@
+Startup instructions for CABP (Custom Agent Builder Platform)
+
+Quick local dev (no Docker)
+- From repo root: `cd ~/Repo1` (or where you cloned the repo)
+- Start dev server and client bound to host: `scripts/dev-start.sh HOST=0.0.0.0 PORT=3000`
+- Dev logs: `/tmp/cabp-server.log` and `/tmp/cabp-client.log`; PIDs in `/tmp/*.pid`
+- Stop dev run: `scripts/dev-stop.sh`
+
+Docker (recommended for parity with CI)
+- Build images manually: `docker build -t cabp-server ./server` and `docker build -t cabp-client ./client`
+- Compose (Linux-only by default because it uses host networking):
+  `docker-compose up --build` or `docker-compose up -d --build`
+- If your runner uses non-host networking, edit `docker-compose.yml` to remove `network_mode: host` and expose ports explicitly.
+
+Systemd (for a persistent host install)
+- Create env file at `/etc/cabp.env` (example):
+  JWT_SECRET=<your-strong-secret>
+  HOST=0.0.0.0
+  PORT=3000
+- Protect the file: `sudo chmod 600 /etc/cabp.env`
+- Run installer (as root): `sudo bash systemd/install-systemd.sh`
+- Start/enable services: `sudo systemctl enable --now cabp-server.service cabp-client.service`
+- Check status/logs:
+  `sudo systemctl status cabp-server.service`
+  `sudo journalctl -u cabp-server.service -n 200 --no-pager`
+
+CI notes
+- Ensure `client/package-lock.json` matches `client/package.json` (CI uses `npm ci`). If CI fails on client build, run locally:
+  `cd client && npm install --no-audit --no-fund && npm test && npm run build`
+  Commit the updated `client/package-lock.json` and push.
+- There is a workflow `docker-build.yml` that builds server/client images and smoke-tests them.
+
+Verify remote
+- API health: `http://<HOST>:<PORT>/api/health` (default port 3000)
+- UI: `http://<HOST>:3000` (or the port you configured)
+
+Useful git commands to add and push this file
+- `git add startup.txt`
+- `git commit -m "docs: add startup instructions"`
+- `git push origin main`
+
+If you want me to also commit and push this file from this environment, tell me. Note: this environment may not be configured with the repo remotes or credentials; if pushing fails I will provide the exact commands for you to run locally.
+
+End of file.
