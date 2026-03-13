@@ -4,8 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { ModalProvider } from './context/ModalContext'
 import { AuthProvider } from './context/AuthContext'
-import Header from './components/Header'
-import './styles.css'
+import './styles/globals.css'
 
 const container = document.getElementById('root')
 const root = createRoot(container)
@@ -15,7 +14,6 @@ root.render(
     <BrowserRouter>
       <AuthProvider>
         <ModalProvider>
-          <Header />
           <App />
         </ModalProvider>
       </AuthProvider>
