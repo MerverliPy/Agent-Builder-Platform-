@@ -5,19 +5,23 @@
 - Implement Phase 5: Live preview real-time updates with smooth transitions
 - Implement Phase 5: Drag-and-drop avatar upload functionality
 - Implement Phase 5: Smart input autocomplete (skills, roles, response styles)
+- Fix E2E test form selectors by adding data-testid attributes to React components
+- Implement test isolation with database cleanup between E2E tests
+- Create Page Object Model for E2E test maintainability
 - Change admin password from default `admin123` to secure password
-- Add E2E tests using Playwright for critical user flows (auth, navigation, agent operations)
-- Integrate tests into CI/CD pipeline (GitHub Actions)
+- Integrate E2E tests into CI/CD pipeline (GitHub Actions)
 
 ## Medium Priority
 
+- Add visual regression testing with Playwright or Percy
+- Add more E2E test coverage: user profile, agent templates, bulk operations
+- Improve E2E test performance (currently timing-sensitive)
 - Implement advanced search and filtering functionality
 - Expand navigation with additional menu items
 - Implement toast notification system using Framer Motion
 - Implement modal dialog component for confirmations
 - Add search and filter functionality to agent list
 - Improve visual design consistency with design tokens
-- Add visual regression testing with Playwright or Percy
 - Increase test coverage for edge cases and error handling
 - Add Dependabot or Renovate for automated dependency updates
 - Document cleanup task scheduling (cron/systemd timer) for uploads cleanup
@@ -158,3 +162,20 @@
   - Installation script: Verified Tailscale IP setup
   - Created TAILSCALE_CONFIG_AUDIT.md with comprehensive audit documentation
   - Committed and pushed Tailscale fix (commit f609904)
+- **Production Bug Fixes and Testing (COMPLETED)**
+  - Fixed null templateData bug in AgentCreatePage (commit 4a85f2e)
+  - Fixed agent list endpoint filtering to exclude users (commit 71075e2)
+  - Conducted comprehensive manual integration testing (30+ tests)
+  - Verified all unit tests passing: 88/88 total (46 frontend + 42 backend)
+  - Created TESTING_RESULTS.md with complete test documentation
+  - Production system stable and accessible via Tailscale
+  - Committed bug fixes (commits 4a85f2e, 71075e2, d28c7d6)
+- **E2E Testing Framework Implementation (COMPLETED)**
+  - Set up Playwright 1.58.2 with chromium browser
+  - Created 4 simplified test suites: auth (5 tests), CRUD (5 tests), navigation (6 tests), errors (7 tests)
+  - Implemented test utilities for common operations
+  - Created 4 comprehensive test suites for future enhancement
+  - Added Playwright configuration with HTML reporting and failure screenshots
+  - Identified and documented test improvement opportunities
+  - Created E2E_TESTING_REPORT.md with 100+ line documentation
+  - Committed E2E framework (commit 708ea71)
