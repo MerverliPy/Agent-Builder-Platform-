@@ -41,18 +41,17 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/register');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.fill('input[placeholder*="Confirm"]', password);
-    await page.click('button:has-text("Register")');
+    const { fillAuthFields } = require('./utils');
+    await fillAuthFields(page, email, password, password);
+    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
     await page.waitForNavigation();
 
     // Login
     await clearAuthToken(page);
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.click('button:has-text("Login")');
+    const { fillAuthFields: fillLoginFields } = require('./utils');
+    await fillLoginFields(page, email, password);
+    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
     await page.waitForNavigation();
 
     // Should be on dashboard or agents page
@@ -66,9 +65,9 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.click('button:has-text("Login")');
+    const { fillAuthFields: fillLoginFields2 } = require('./utils');
+    await fillLoginFields2(page, email, password);
+    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
     await page.waitForNavigation();
 
     // Navigate to agents
@@ -90,9 +89,9 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.click('button:has-text("Login")');
+    const { fillAuthFields: fillLoginFields3 } = require('./utils');
+    await fillLoginFields3(page, email, password);
+    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
     await page.waitForNavigation();
 
     // Navigate to create agent
@@ -109,8 +108,8 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    const { fillAuthFields: fillLoginFields4 } = require('./utils');
+    await fillLoginFields4(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation();
 
@@ -149,8 +148,8 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    const { fillAuthFields: fillLoginFields5 } = require('./utils');
+    await fillLoginFields5(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation();
 
@@ -176,8 +175,8 @@ test.describe('Navigation and Routing E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    const { fillAuthFields } = require('./utils');
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation();
 

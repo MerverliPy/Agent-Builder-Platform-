@@ -95,6 +95,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="username"
                   hint="Your unique identifier"
+                  data-testid="register-username"
                 />
 
                 <Input
@@ -106,6 +107,7 @@ export default function RegisterPage() {
                   required
                   autoComplete="new-password"
                   hint="At least 6 characters"
+                  data-testid="register-password"
                 />
 
                 <Input
@@ -116,6 +118,7 @@ export default function RegisterPage() {
                   placeholder="Confirm your password"
                   required
                   autoComplete="new-password"
+                  data-testid="register-confirm-password"
                 />
 
                 {err && (

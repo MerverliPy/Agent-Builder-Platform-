@@ -77,3 +77,17 @@ export async function fillForm(page, formData) {
 export async function generateUniqueEmail() {
   return `test-${Date.now()}@example.com`;
 }
+
+// Common selectors that prefer data-testid attributes but fall back to input types
+export const usernameSelector = 'input[data-testid*="username"], input[type="email"]'
+export const passwordSelector = 'input[data-testid*="password"], input[type="password"]'
+export const confirmSelector = 'input[data-testid="register-confirm-password"], input[placeholder*="Confirm"]'
+
+// Helper to fill auth/register forms consistently
+export async function fillAuthFields(page, username, password, confirm = null) {
+  await page.fill(usernameSelector, username)
+  await page.fill(passwordSelector, password)
+  if (confirm !== null) {
+    await page.fill(confirmSelector, confirm)
+  }
+}

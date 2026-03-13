@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { fillAuthFields, usernameSelector, passwordSelector, confirmSelector } = require('./utils');
 
 test.describe('Error Handling E2E Tests', () => {
   test('should show validation error for empty name field', async ({ page }) => {
@@ -8,18 +9,15 @@ test.describe('Error Handling E2E Tests', () => {
 
     try {
       await page.goto('/register');
-      await page.fill('input[type="email"]', email);
-      await page.fill('input[type="password"]', password);
-      await page.fill('input[placeholder*="Confirm"]', password);
-      await page.click('button:has-text("Register")');
+      await fillAuthFields(page, email, password, password);
+      await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
       // User might already exist
     }
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation({ timeout: 3000 });
 
@@ -46,17 +44,15 @@ test.describe('Error Handling E2E Tests', () => {
     await page.goto('/register');
 
     // Enter invalid email
-    await page.fill('input[type="email"]', 'not-an-email');
-    await page.fill('input[type="password"]', 'TestPassword123!');
-    await page.fill('input[placeholder*="Confirm"]', 'TestPassword123!');
+    await fillAuthFields(page, 'not-an-email', 'TestPassword123!', 'TestPassword123!');
 
     // Try to submit
-    await page.click('button:has-text("Register")');
+    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
 
     // Should show validation error or HTML5 validation message
-    const emailInput = await page.$('input[type="email"]');
+    const emailInput = await page.$(usernameSelector);
     const isInvalid = await emailInput.evaluate(el => !el.validity.valid);
-    
+
     expect(isInvalid).toBeTruthy();
   });
 
@@ -64,19 +60,17 @@ test.describe('Error Handling E2E Tests', () => {
     await page.goto('/register');
 
     const email = `error-${Date.now()}@example.com`;
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', 'TestPassword123!');
-    await page.fill('input[placeholder*="Confirm"]', 'DifferentPassword456!');
+    await fillAuthFields(page, email, 'TestPassword123!', 'DifferentPassword456!');
 
     // Try to submit
-    await page.click('button:has-text("Register")');
+    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
 
     // Should show error or stay on form
     await page.waitForTimeout(1000);
     
     // Check for error message or form still visible
     const errorVisible = await page.isVisible('text=do not match, text=Passwords must match');
-    const formVisible = await page.isVisible('input[placeholder*="Confirm"]');
+    const formVisible = await page.isVisible(confirmSelector);
     
     expect(errorVisible || formVisible).toBeTruthy();
   });
@@ -87,18 +81,14 @@ test.describe('Error Handling E2E Tests', () => {
 
     // First registration
     await page.goto('/register');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.fill('input[placeholder*="Confirm"]', password);
-    await page.click('button:has-text("Register")');
+    await fillAuthFields(page, email, password, password);
+    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
     await page.waitForNavigation({ timeout: 3000 }).catch(() => {});
 
     // Try to register with same email
     await page.goto('/register');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
-    await page.fill('input[placeholder*="Confirm"]', password);
-    await page.click('button:has-text("Register")');
+    await fillAuthFields(page, email, password, password);
+    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
 
     // Should show error
     await page.waitForTimeout(2000);
@@ -117,8 +107,7 @@ test.describe('Error Handling E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
 
     // Should show error message
@@ -149,8 +138,7 @@ test.describe('Error Handling E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation({ timeout: 3000 });
 
@@ -177,8 +165,7 @@ test.describe('Error Handling E2E Tests', () => {
     const password = 'TestPassword123!';
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
 
     // Should show error or timeout message
@@ -195,9 +182,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     try {
       await page.goto('/register');
-      await page.fill('input[type="email"]', email);
-      await page.fill('input[type="password"]', password);
-      await page.fill('input[placeholder*="Confirm"]', password);
+      await fillAuthFields(page, email, password, password);
       await page.click('button:has-text("Register")');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
@@ -205,8 +190,7 @@ test.describe('Error Handling E2E Tests', () => {
     }
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation({ timeout: 3000 });
 
@@ -234,9 +218,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     try {
       await page.goto('/register');
-      await page.fill('input[type="email"]', email);
-      await page.fill('input[type="password"]', password);
-      await page.fill('input[placeholder*="Confirm"]', password);
+      await fillAuthFields(page, email, password, password);
       await page.click('button:has-text("Register")');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {
@@ -244,8 +226,7 @@ test.describe('Error Handling E2E Tests', () => {
     }
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
     await page.waitForNavigation({ timeout: 3000 });
 
@@ -285,8 +266,7 @@ test.describe('Error Handling E2E Tests', () => {
 
     // First attempt fails
     await page.goto('/login');
-    await page.fill('input[type="email"]', email);
-    await page.fill('input[type="password"]', password);
+    await fillAuthFields(page, email, password);
     await page.click('button:has-text("Login")');
 
     // Error should be shown

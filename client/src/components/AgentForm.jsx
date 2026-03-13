@@ -242,6 +242,7 @@ export default function AgentForm({
                       value={model}
                       onChange={e => setModel(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+                      data-testid="agentform-model-select"
                     >
                       {groupedModels.map(group => (
                         <optgroup key={group.provider} label={group.displayName}>

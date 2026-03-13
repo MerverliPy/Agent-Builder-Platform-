@@ -8,8 +8,8 @@ async function loginBeforeTest(page) {
   const password = 'TestPassword123!';
 
   await page.goto('/login');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  const { fillAuthFields } = require('./utils');
+  await fillAuthFields(page, email, password);
   await page.click('button:has-text("Login")');
   await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 }
@@ -22,9 +22,8 @@ test.describe('Media Upload E2E Tests', () => {
 
     try {
       await page.goto('/register');
-      await page.fill('input[type="email"]', email);
-      await page.fill('input[type="password"]', password);
-      await page.fill('input[placeholder*="Confirm"]', password);
+      const { fillAuthFields } = require('./utils');
+      await fillAuthFields(page, email, password, password);
       await page.click('button:has-text("Register")');
       await page.waitForNavigation({ timeout: 3000 });
     } catch (e) {

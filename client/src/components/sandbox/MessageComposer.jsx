@@ -73,6 +73,7 @@ export const MessageComposer = ({
             'text-sm leading-relaxed'
           )}
           aria-label="Message input"
+          data-testid="message-composer-input"
         />
       </div>
 
@@ -85,6 +86,7 @@ export const MessageComposer = ({
           disabled={disabled || !message.trim()}
           className="rounded-xl px-4 py-3 h-auto"
           aria-label="Send message"
+          data-testid="message-composer-send"
         >
           <svg 
             className="w-5 h-5" 

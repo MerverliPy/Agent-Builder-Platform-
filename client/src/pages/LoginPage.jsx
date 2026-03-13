@@ -67,6 +67,7 @@ export default function LoginPage() {
                   placeholder="Enter your username"
                   required
                   autoComplete="username"
+                  data-testid="login-username"
                 />
 
                 <Input
@@ -77,6 +78,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   required
                   autoComplete="current-password"
+                  data-testid="login-password"
                 />
 
                 {err && (

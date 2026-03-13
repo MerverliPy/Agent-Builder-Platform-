@@ -34,9 +34,11 @@ jobs:
 
       - name: Install Playwright browsers and system dependencies
         # Use the playwright CLI to install browsers and dependencies directly.
-        # The microsoft/playwright-github-action@v1 has deprecated inputs and sometimes
-        # fails on newer Ubuntu images. Installing via CLI is more stable and explicit.
-        run: npx playwright install --with-deps
+        # Capture output to a log so failures are diagnosable in CI.
+        run: npx playwright install --with-deps 2>&1 | tee /tmp/playwright-install.log
+
+      - name: Print Playwright version
+        run: npx playwright --version || true
 
       - name: Install client deps
         working-directory: client
@@ -49,8 +51,8 @@ jobs:
       - name: Serve client in background
         working-directory: client
         run: |
-          # serve the static build on port 3000
-          npx serve -s dist -l 3000 &> /tmp/client.log &
+          # serve the static build on port 3000 using our minimal static server
+          HOST=127.0.0.1 PORT=3000 node static-server.js &> /tmp/client.log &
           echo $! > /tmp/client.pid
 
       - name: Wait for client
@@ -67,3 +69,16 @@ jobs:
         run: |
           if [ -f /tmp/server.pid ]; then kill $(cat /tmp/server.pid) || true; fi
           if [ -f /tmp/client.pid ]; then kill $(cat /tmp/client.pid) || true; fi
+
+      - name: Upload E2E diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diagnostics-${{ github.run_id }}
+          path: |
+            /tmp/server.log
+            /tmp/client.log
+            /tmp/playwright-install.log
+            client/playwright-report
+            client/playwright-report/**
+            client/test-results
