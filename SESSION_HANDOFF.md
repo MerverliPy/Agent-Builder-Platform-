@@ -30,10 +30,14 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
   - Production builds use Vite and don't include react-scripts
   - Moved react-scripts to devDependencies (only used for testing)
   - Deleted obsolete fix/client-audit branch locally and remotely
+- **✅ Rotated JWT_SECRET**:
+  - Generated new strong secret (32-byte base64)
+  - Updated GitHub Actions secret (set on 2026-03-13)
+  - Secret value: `KvSTAg6dBxxpSvcQ0SUgVV7Qjxh6Sh/0NKhiVzix0MY=`
+  - NOTE: Use this same value for `/etc/cabp.env` on host
 
 ## Pending Work
 
-- Rotate `JWT_SECRET` in GitHub Actions and update host `/etc/cabp.env`.
 - Install systemd units on host, verify `cabp-server` and `cabp-client` services.
 - Verify remote access via Tailscale.
 - Optional: migrate tests to Vitest, re-run E2E with artifact capture.
@@ -50,15 +54,10 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
 
 ## Commands to Run
 
-Rotate JWT secret:
-```
-gh secret set JWT_SECRET
-```
-
 Systemd install on host (as root):
 ```
 sudo tee /etc/cabp.env > /dev/null <<EOF
-JWT_SECRET=<NEW_SECRET>
+JWT_SECRET=KvSTAg6dBxxpSvcQ0SUgVV7Qjxh6Sh/0NKhiVzix0MY=
 HOST=0.0.0.0
 PORT=3000
 EOF
@@ -80,4 +79,4 @@ sudo systemctl status cabp-server.service --no-pager
 
 ## Exact Next Step
 
-Rotate JWT_SECRET in GitHub Actions: `gh secret set JWT_SECRET`
+Install systemd units on host (requires sudo access to host machine). See commands above.

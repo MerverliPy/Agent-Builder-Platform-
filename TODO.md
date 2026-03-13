@@ -1,7 +1,6 @@
 # Project TODO
 
 ## High Priority
-- Rotate `JWT_SECRET` to a strong value and update GitHub Actions secret.
 - Run systemd installer on host and verify `cabp-server` and `cabp-client` services start on boot.
 - Ensure systemd units point to correct Node binary/environment for the host.
 - Verify production startup: systemd services bind to Tailscale IP and UI/API are reachable remotely.
@@ -44,3 +43,5 @@
 - Evaluated fix/client-audit branch: confirmed obsolete (vulnerabilities only in dev deps).
 - Moved react-scripts to devDependencies (production builds use Vite only).
 - Deleted fix/client-audit branch locally and remotely.
+- Rotated JWT_SECRET in GitHub Actions (32-byte base64, set 2026-03-13).
+- Documented JWT_SECRET value in SESSION_HANDOFF.md for host systemd installation.
