@@ -2,55 +2,63 @@
 
 ## Current Objective
 
-Implement and validate real agent execution (OpenAI, Anthropic, Ollama) while preserving mock fallback; ensure CI/E2E reliability and that backend/frontend services are reachable on the Tailscale network.
+Stabilize Playwright E2E for the client (prefer `data-testid` selectors, use `fillAuthFields` helper), ensure the simple E2E suite runs reliably locally and in CI, and complete remaining E2E hardening and CI diagnostics.
 
 ## Completed Work
 
-- Added Ollama provider support: config, models in registry, and LLM service methods (availability check, chat routing).
-- Implemented `conversationService` (in-memory) and integrated multi-turn conversation persistence in chat flows.
-- Frontend: grouped model selector by provider, mock fallback preserved when LLMs are not configured.
-- Bound services to Tailscale IP (100.81.83.98); updated `client/.env` to use the Tailscale API base URL.
-- CI: replaced deprecated Playwright GitHub Action inputs with `npx playwright install --with-deps` (commit `8e9866f`); Docker Build & Smoke Test and CI workflows now pass.
-- Verified local tests: backend Jest and frontend Vitest unit suites pass; frontend builds successfully.
+- Added `data-testid` attributes and stable hooks to key UI elements (agent name input, submit button, preview name, agent card actions).
+- Implemented and used `fillAuthFields` helper for auth flows; updated tests to prefer `data-testid` and fallback selectors.
+- Converted and stabilized all simple Playwright tests: `tests/e2e/*-simple.spec.js` now pass locally (21/21).
+- Fixed brittle navigation/localStorage access in tests and made CLI-based Playwright install the canonical approach (`npx playwright install --with-deps`).
+- Rebuilt client and restarted dev server so tests run against updated DOM.
+- Ran local test suites: Playwright simple E2E (21/21 passed) and Vitest unit tests (46/46 passed).
+- Committed and pushed changes to `main` (commit f5df4ee).
+- **Inspected CI E2E run (23070785396)**: 15/21 tests passed, 6 failed due to API routing issue.
+- **Diagnosed root cause**: Static client build defaults to relative `/api` path, but API runs on different port in CI (5000 vs 3000).
+- **Fixed**: Added `VITE_API_BASE=http://localhost:5000/api` env var to client build step in `.github/workflows/e2e.yml`.
 
 ## Pending Work
 
-- Fetch and analyze E2E run `23065345021` logs and apply fixes if failures occur.
-- Harden Ollama availability & error handling (retry/backoff, cache invalidation) and add tests.
-- Add `data-testid` attributes to key form inputs for robust Playwright selectors.
-- Add integration tests for LLM routing and conversation persistence (mock + real provider cases).
-- Add conversation export (transcript download) and improve multi-turn context handling.
-- Improve CI diagnostics for Playwright installs (capture `npx playwright --version`, install logs, and add apt pre-installs on ubuntu-24.04 if required).
+- **Re-run GitHub Actions E2E workflow and verify all tests pass after API routing fix.**
+- Convert remaining non-simple E2E specs to prefer `data-testid` and the helper where gaps remain (`tests/e2e/*.spec.js`).
+- Add `data-testid` to any remaining frequently-targeted UI elements (agent list items, create/save buttons across pages).
+- Implement test isolation (database cleanup) for full E2E reliability and repeatability.
+- Consider making VITE_API_BASE configurable at runtime for flexible deployment (vs. build-time only).
 
 ## Relevant Files
 
-- `server/src/config/index.js` — Ollama config (OLLAMA_BASE_URL, OLLAMA_ENABLED).
-- `server/src/services/llmService.js` — Ollama methods, provider availability logic.
-- `server/src/services/conversationService.js` — in-memory conversation store.
-- `server/src/models/agentModel.js` — added `ollama` provider and model keys.
-- `server/src/controllers/agentsController.js` — validation ordering fix.
-- `client/src/components/AgentForm.jsx` — grouped model selector by provider.
-- `client/src/pages/AgentSandboxPage.jsx` — sandbox page using real API with mock fallback.
-- `client/.env` — VITE_API_BASE=http://100.81.83.98:5000/api
-- `.github/workflows/e2e.yml` — Playwright install step replaced with CLI install.
+- `client/tests/e2e/utils.js` — `fillAuthFields` helper and selector constants.
+- `client/src/components/AgentForm.jsx` — `data-testid="agent-name"`, `data-testid="agentform-submit"`.
+- `client/src/components/agent/AgentPreviewCard.jsx` — `data-testid="agent-preview-name"`.
+- `client/src/components/AgentCard.jsx` — `data-testid` attributes for cards and actions.
+- `client/tests/e2e/*-simple.spec.js` — converted Playwright simple suites (auth, crud, errors, navigation).
+- `.github/workflows/e2e.yml` — uses CLI Playwright install and uploads diagnostics (verify on CI run).
+- `scripts/dev-start.sh` / `scripts/dev-stop.sh` — dev server lifecycle used during local runs.
 
 ## Commands to Run
 
-- Frontend unit tests: `cd client && npm test`
-- Backend unit tests: `cd server && npm test`
-- Build frontend: `cd client && npm run build`
-- Start backend (dev): `cd server && HOST=localhost NODE_ENV=development PORT=5000 npm start`
-- Start client (dev): `cd client && npm run dev`
-- Fetch E2E logs: `gh run view 23065345021 --log` (wait for completion) or cancel: `gh run cancel 23065345021` then rerun.
-- Reproduce CI smoke test locally: build images and run server container, then `curl http://localhost:5000/api/health`.
+- Install Playwright browsers: `cd client && npx playwright install --with-deps`
+- Run simple E2E suite locally: `cd client && npx playwright test --reporter=list`
+- Run a single failing test: `cd client && npx playwright test tests/e2e/crud-simple.spec.js -g "should create a new agent" --project=chromium --reporter=list`
+- Run unit tests: `cd client && npm test` and `cd server && npm test`
+- Build & serve client (production): `cd client && npm run build && ./scripts/dev-start.sh 127.0.0.1`
+- Trigger/inspect CI run: `gh run list --workflow=e2e.yml` then `gh run view <id> --log`; re-run: `gh run rerun <id>`.
 
 ## Known Issues
 
-- E2E Playwright installer: older action failed on ubuntu-24.04; fixed by using `npx playwright install --with-deps` but CI runs should be inspected for missing apt packages.
-- E2E selectors: some form inputs lack `data-testid`, causing brittle selectors in Playwright tests.
-- Ollama availability: availability checks are cached; add explicit invalidation and robust error handling.
-- Mock fallback: when no provider is configured chat returns `llm_not_configured` (503) — UI must gracefully fall back to demo responses.
+- **CI E2E failures (run 23070785396)**: 6 tests failed because static client couldn't reach API server on different port.
+  - Failed tests: register new user, login, logout, duplicate user error, validate agent fields, access agents after login.
+  - Root cause: Client built without `VITE_API_BASE` env var, so API calls went to `http://localhost:3000/api/*` (client port) instead of `http://localhost:5000/api/*` (server port).
+  - API returned HTML (SPA fallback) instead of JSON, causing "Unexpected token '<'" parse errors.
+  - **Fixed in commit (pending)**: Added `VITE_API_BASE=http://localhost:5000/api` to build step.
+- Some non-simple E2E tests still use fallback or placeholder selectors — audit and convert these to `data-testid` for full-suite stability.
+- Search input components render readonly inputs; tests must avoid filling readonly inputs (the helper already guards against this).
 
 ## Exact Next Step
 
-Wait for E2E run `23065345021` to complete and fetch its full logs (`gh run view 23065345021 --log`); if it remains stuck or fails on Playwright install, cancel and rerun the E2E workflow, then analyze failure logs and apply targeted fixes (Playwright deps or brittle selectors are likely candidates).
+Commit the CI fix and trigger a new E2E workflow run to verify all tests pass:
+
+1. Commit changes: `git add .github/workflows/e2e.yml SESSION_HANDOFF.md && git commit -m "fix(ci): set VITE_API_BASE for E2E tests to reach API server" && git push`
+2. Monitor the new workflow run: `gh run list --workflow=e2e.yml`
+3. When complete, verify all 21 tests pass: `gh run view <run-id>`
+4. Download artifacts if needed: `gh run download <run-id>`

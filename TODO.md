@@ -2,12 +2,12 @@
 
 ## High Priority
 
-- Add `data-testid` attributes to key form inputs for Playwright stability
-- Implement drag-and-drop avatar upload for AgentCreatePage
+- Complete conversion of remaining non-simple E2E specs to use `data-testid` and `fillAuthFields` helper
+- Improve CI diagnostics for Playwright installs (capture install logs to /tmp and upload as artifacts)
 - Implement test isolation with database cleanup between E2E tests
-- Create Page Object Model for E2E maintainability and stable selectors
+- Add `data-testid` to remaining frequently-targeted UI elements (agent list items, create/save buttons)
+- Integrate full E2E suite into CI and verify on ubuntu runners
 - Change admin password from default `admin123` to a secure value
-- Integrate E2E tests into CI (ensure Playwright install/logging robust on ubuntu-24.04)
 
 ## Medium Priority
 
@@ -35,10 +35,11 @@
 
 ## New / Discovered Tasks
 
-- Fetch and analyze E2E run logs for run `23065345021` and fix failures (Playwright install or brittle selectors).
-- Harden Ollama provider handling: availability retries, cache invalidation, and tests.
-- Add conversation export (download transcript) in sandbox UI.
-- Add integration tests for LLM routing and conversation persistence (mock + real provider cases).
+- Fetch and analyze latest E2E run logs and fix CI-specific failures (Playwright install or brittle selectors)
+- Harden Ollama provider handling: availability retries, cache invalidation, and tests
+- Add conversation export (download transcript) in sandbox UI
+- Add integration tests for LLM routing and conversation persistence (mock + real provider cases)
+- Add Playwright traces/screenshots upload to CI artifacts for failing tests
 
 ## Completed
 
@@ -49,6 +50,7 @@
 - Implemented Agent Sandbox (chat UI, mock responses, session persistence)
 - Implemented Ollama provider support and in-memory conversationService
 - Fixed Playwright install step in CI (`npx playwright install --with-deps`) and verified Docker Build & CI workflows
+- Added stable `data-testid` attributes and converted simple E2E tests to use `fillAuthFields` helper; local Playwright simple suite passes (21/21)
 
 ## Recently Completed (context)
 
