@@ -1,8 +1,15 @@
 import React, { useState } from 'react'
 import AvatarPicker from './AvatarPicker'
-import { Input, Button, Stack, Card } from './ui'
+import FormSection from './form/FormSection'
+import { Input, Button, Card, Stack } from './ui'
 
-export default function AgentForm({ initial = {}, onSubmit, submitLabel = 'Save' }) {
+export default function AgentForm({ 
+  initial = {}, 
+  onSubmit, 
+  submitLabel = 'Save',
+  hideSubmit = false,
+  onFormChange = null,
+}) {
   const [name, setName] = useState(initial.name || '')
   const [skills, setSkills] = useState((initial.skills || []).join(','))
   const [responseStyle, setResponseStyle] = useState(initial.responseStyle || '')
@@ -15,6 +22,48 @@ export default function AgentForm({ initial = {}, onSubmit, submitLabel = 'Save'
     const e = {}
     if (!name || name.trim().length === 0) e.name = 'Name is required'
     return e
+  }
+
+  // Notify parent of form changes for live preview
+  function notifyChange() {
+    if (onFormChange) {
+      onFormChange({
+        name: name.trim(),
+        avatar: avatar || null,
+        skills: skills.split(',').map(s=>s.trim()).filter(Boolean),
+        responseStyle: responseStyle.trim(),
+        roles: roles.split(',').map(s=>s.trim()).filter(Boolean),
+      })
+    }
+  }
+
+  const handleNameChange = (val) => {
+    setName(val)
+    setTimeout(() => onFormChange && onFormChange({ name: val }), 0)
+  }
+
+  const handleAvatarChange = (val) => {
+    setAvatar(val)
+    setTimeout(() => onFormChange && onFormChange({ avatar: val }), 0)
+  }
+
+  const handleSkillsChange = (val) => {
+    setSkills(val)
+    setTimeout(() => onFormChange && onFormChange({ 
+      skills: val.split(',').map(s=>s.trim()).filter(Boolean)
+    }), 0)
+  }
+
+  const handleRolesChange = (val) => {
+    setRoles(val)
+    setTimeout(() => onFormChange && onFormChange({ 
+      roles: val.split(',').map(s=>s.trim()).filter(Boolean)
+    }), 0)
+  }
+
+  const handleResponseStyleChange = (val) => {
+    setResponseStyle(val)
+    setTimeout(() => onFormChange && onFormChange({ responseStyle: val }), 0)
   }
 
   async function handleSubmit(ev) {
@@ -38,67 +87,100 @@ export default function AgentForm({ initial = {}, onSubmit, submitLabel = 'Save'
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <Card.Content className="p-6">
-          <Stack spacing={6}>
-            <Input
-              id="agent-name"
-              label="Name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              error={errors.name}
-              hint="Give your agent a unique and descriptive name"
-              required
-            />
+    <form onSubmit={handleSubmit} className="space-y-0">
+      <Card className="rounded-lg border border-gray-200 overflow-hidden">
+        {/* Form Content */}
+        <Card.Content className="p-0 lg:p-0">
+          <Stack spacing={0} className="divide-y divide-gray-200">
+            {/* Identity Section */}
+            <div className="p-6">
+              <FormSection 
+                title="Identity"
+                description="Define your agent's name and appearance"
+              >
+                <Input
+                  id="agent-name"
+                  label="Name"
+                  value={name}
+                  onChange={e => handleNameChange(e.target.value)}
+                  error={errors.name}
+                  hint="Give your agent a unique and descriptive name"
+                  required
+                />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Avatar</label>
-              <AvatarPicker value={avatar} onChange={setAvatar} />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Avatar
+                  </label>
+                  <AvatarPicker 
+                    value={avatar} 
+                    onChange={handleAvatarChange} 
+                  />
+                </div>
+              </FormSection>
             </div>
 
-            <Input
-              label="Skills"
-              value={skills}
-              onChange={e => setSkills(e.target.value)}
-              placeholder="e.g., JavaScript, React, Node.js"
-              hint="Enter comma-separated skills"
-            />
+            {/* Capabilities Section */}
+            <div className="p-6">
+              <FormSection
+                title="Capabilities"
+                description="Define what your agent can do and who can access it"
+              >
+                <Input
+                  label="Skills"
+                  value={skills}
+                  onChange={e => handleSkillsChange(e.target.value)}
+                  placeholder="e.g., JavaScript, React, Node.js"
+                  hint="Enter comma-separated skills"
+                />
 
-            <Input
-              label="Response Style"
-              value={responseStyle}
-              onChange={e => setResponseStyle(e.target.value)}
-              placeholder="e.g., Professional, Friendly, Technical"
-              hint="Describe how the agent should communicate"
-            />
+                <Input
+                  label="Roles"
+                  value={roles}
+                  onChange={e => handleRolesChange(e.target.value)}
+                  placeholder="e.g., developer, designer, admin"
+                  hint="Enter comma-separated roles for access control"
+                />
+              </FormSection>
+            </div>
 
-            <Input
-              label="Roles"
-              value={roles}
-              onChange={e => setRoles(e.target.value)}
-              placeholder="e.g., developer, designer, admin"
-              hint="Enter comma-separated roles for access control"
-            />
+            {/* Behavior Section */}
+            <div className="p-6">
+              <FormSection
+                title="Behavior"
+                description="Configure how your agent communicates"
+              >
+                <Input
+                  label="Response Style"
+                  value={responseStyle}
+                  onChange={e => handleResponseStyleChange(e.target.value)}
+                  placeholder="e.g., Professional, Friendly, Technical"
+                  hint="Describe how the agent should communicate"
+                />
+              </FormSection>
+            </div>
           </Stack>
         </Card.Content>
 
-        <Card.Footer className="flex justify-end gap-3 px-6 py-4 bg-gray-50">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.history.back()}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            loading={submitting}
-            disabled={submitting}
-          >
-            {submitting ? 'Saving...' : submitLabel}
-          </Button>
-        </Card.Footer>
+        {/* Form Footer - Sticky Submit Area */}
+        {!hideSubmit && (
+          <Card.Footer className="sticky bottom-0 flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.history.back()}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={submitting}
+              disabled={submitting}
+            >
+              {submitting ? 'Saving...' : submitLabel}
+            </Button>
+          </Card.Footer>
+        )}
       </Card>
     </form>
   )
