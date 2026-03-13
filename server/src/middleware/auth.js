@@ -14,6 +14,25 @@ function requireAuth(req, res, next) {
   }
 }
 
+/**
+ * Optional authentication - sets req.user if valid token provided, but doesn't require it
+ */
+function optionalAuth(req, res, next) {
+  const h = req.headers.authorization || ''
+  if (!h.startsWith('Bearer ')) {
+    req.user = null
+    return next()
+  }
+  const token = h.slice('Bearer '.length)
+  try {
+    const payload = jwt.verify(token, JWT_SECRET)
+    req.user = payload
+  } catch (err) {
+    req.user = null
+  }
+  return next()
+}
+
 function requireRole(...roles) {
   return (req, res, next) => {
     const userRoles = (req.user && req.user.roles) || []
@@ -23,4 +42,4 @@ function requireRole(...roles) {
   }
 }
 
-module.exports = { requireAuth, requireRole }
+module.exports = { requireAuth, optionalAuth, requireRole }

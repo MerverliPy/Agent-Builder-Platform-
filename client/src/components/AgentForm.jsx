@@ -1,10 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AvatarPicker from './AvatarPicker'
 import FormSection from './form/FormSection'
 import TagInput from './form/TagInput'
 import ChipSelect from './form/ChipSelect'
 import StyleSelector from './form/StyleSelector'
 import { Input, Button, Card, Stack } from './ui'
+import api from '../api/api'
+
+// Default LLM settings
+const LLM_DEFAULTS = {
+  model: 'gpt-4o-mini',
+  temperature: 0.7,
+  maxTokens: 1024
+}
 
 export default function AgentForm({ 
   initial = {}, 
@@ -19,12 +27,29 @@ export default function AgentForm({
   const [responseStyle, setResponseStyle] = useState(initial.responseStyle || '')
   const [roles, setRoles] = useState(initial.roles || [])
   const [avatar, setAvatar] = useState(initial.avatar || '')
+  
+  // LLM Configuration
+  const [systemPrompt, setSystemPrompt] = useState(initial.systemPrompt || '')
+  const [model, setModel] = useState(initial.model || LLM_DEFAULTS.model)
+  const [temperature, setTemperature] = useState(initial.temperature ?? LLM_DEFAULTS.temperature)
+  const [maxTokens, setMaxTokens] = useState(initial.maxTokens ?? LLM_DEFAULTS.maxTokens)
+  const [availableModels, setAvailableModels] = useState({ available: {}, all: {} })
+  
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+
+  // Fetch available models on mount
+  useEffect(() => {
+    api.getModels()
+      .then(data => setAvailableModels(data))
+      .catch(err => console.warn('Failed to fetch models:', err))
+  }, [])
 
   function validate() {
     const e = {}
     if (!name || name.trim().length === 0) e.name = 'Name is required'
+    if (temperature < 0 || temperature > 2) e.temperature = 'Temperature must be between 0 and 2'
+    if (maxTokens < 1 || maxTokens > 8192) e.maxTokens = 'Max tokens must be between 1 and 8192'
     return e
   }
 
@@ -79,7 +104,12 @@ export default function AgentForm({
       avatar: avatar || null,
       skills: skills,
       responseStyle: responseStyle.trim(),
-      roles: roles
+      roles: roles,
+      // LLM Configuration
+      systemPrompt: systemPrompt.trim(),
+      model: model,
+      temperature: temperature,
+      maxTokens: maxTokens
     }
     
     try {
@@ -88,6 +118,24 @@ export default function AgentForm({
       setSubmitting(false)
     }
   }
+
+  // Group models by provider with display names
+  const providerDisplayNames = {
+    openai: 'OpenAI',
+    anthropic: 'Anthropic',
+    ollama: 'Ollama (Free, Local)'
+  }
+  
+  // Create grouped models structure
+  const groupedModels = Object.entries(availableModels.all || {}).map(([provider, models]) => ({
+    provider,
+    displayName: providerDisplayNames[provider] || provider,
+    models: models.map(m => ({
+      value: m,
+      label: m,
+      configured: (availableModels.available?.[provider] || []).includes(m)
+    }))
+  }))
 
   return (
     <form onSubmit={handleSubmit} className="space-y-0">
@@ -158,6 +206,102 @@ export default function AgentForm({
                   onChange={handleResponseStyleChange}
                   hint="Choose a communication style for your agent"
                 />
+              </FormSection>
+            </div>
+
+            {/* LLM Configuration Section */}
+            <div className="p-6">
+              <FormSection
+                title="AI Model Configuration"
+                description="Configure the language model powering your agent"
+              >
+                <div>
+                  <label htmlFor="system-prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                    System Prompt
+                  </label>
+                  <textarea
+                    id="system-prompt"
+                    value={systemPrompt}
+                    onChange={e => setSystemPrompt(e.target.value)}
+                    placeholder="Enter instructions for how the agent should behave..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Custom instructions for the AI. Leave blank to auto-generate from agent metadata.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="model-select" className="block text-sm font-medium text-gray-700 mb-1">
+                      Model
+                    </label>
+                    <select
+                      id="model-select"
+                      value={model}
+                      onChange={e => setModel(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    >
+                      {groupedModels.map(group => (
+                        <optgroup key={group.provider} label={group.displayName}>
+                          {group.models.map(m => (
+                            <option key={m.value} value={m.value}>
+                              {m.label} {!m.configured && '(not configured)'}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Select the AI model. Ollama models are free and run locally.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="temperature" className="block text-sm font-medium text-gray-700 mb-1">
+                      Temperature: {temperature}
+                    </label>
+                    <input
+                      id="temperature"
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={temperature}
+                      onChange={e => setTemperature(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>Precise</span>
+                      <span>Creative</span>
+                    </div>
+                    {errors.temperature && (
+                      <p className="mt-1 text-xs text-red-500">{errors.temperature}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="max-tokens" className="block text-sm font-medium text-gray-700 mb-1">
+                      Max Tokens
+                    </label>
+                    <input
+                      id="max-tokens"
+                      type="number"
+                      min="1"
+                      max="8192"
+                      value={maxTokens}
+                      onChange={e => setMaxTokens(parseInt(e.target.value, 10) || 1024)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Maximum response length
+                    </p>
+                    {errors.maxTokens && (
+                      <p className="mt-1 text-xs text-red-500">{errors.maxTokens}</p>
+                    )}
+                  </div>
+                </div>
               </FormSection>
             </div>
           </Stack>
