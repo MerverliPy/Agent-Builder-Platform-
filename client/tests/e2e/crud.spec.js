@@ -10,7 +10,7 @@ async function loginBeforeTest(page) {
   await page.goto('/register');
   try {
     await fillAuthFields(page, email, password, password);
-    await page.click('button:has-text("Register")');
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation();
   } catch (e) {
     // ignore if registration fails or user exists
@@ -20,7 +20,7 @@ async function loginBeforeTest(page) {
   await clearAuthToken(page);
   await page.goto('/login');
   await fillAuthFields(page, email, password);
-  await page.click('button:has-text("Login")');
+  await page.click('[data-testid="login-submit"]');
   await page.waitForNavigation();
 }
 
@@ -34,14 +34,14 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.goto('/agents');
     expect(page.url()).toContain('/agents');
 
-    // Click "Create Agent" button
-    await page.click('button:has-text("Create Agent"), button:has-text("New Agent"), a:has-text("Create")');
+    // Click "Create Agent" button using data-testid
+    await page.click('[data-testid="create-agent-button"], [data-testid="create-first-agent-button"]');
     await page.waitForNavigation();
     expect(page.url()).toContain('/agents/new');
 
     // Fill agent form
     const agentName = `Test Agent ${Date.now()}`;
-    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
+    await page.fill('[data-testid="agent-name"]', agentName);
     await page.fill('textarea[name="description"], textarea[placeholder*="description" i]', 'This is a test agent');
     await page.fill('input[name="role"], input[placeholder*="role" i]', 'Assistant');
     
@@ -51,8 +51,8 @@ test.describe('Agent CRUD E2E Tests', () => {
       await avatarOptions.click();
     }
 
-    // Submit form
-    await page.click('button:has-text("Create"), button:has-text("Save")');
+    // Submit form using data-testid
+    await page.click('[data-testid="agentform-submit"]');
 
     // Should redirect to agents or show success
     await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
@@ -65,12 +65,12 @@ test.describe('Agent CRUD E2E Tests', () => {
   test('should create a new agent with minimal fields', async ({ page }) => {
     await page.goto('/agents/new');
 
-    // Fill only required fields
+    // Fill only required fields using data-testid
     const agentName = `Minimal Agent ${Date.now()}`;
-    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
+    await page.fill('[data-testid="agent-name"]', agentName);
 
-    // Submit form
-    await page.click('button:has-text("Create"), button:has-text("Save")');
+    // Submit form using data-testid
+    await page.click('[data-testid="agentform-submit"]');
 
     // Should redirect to agents or show success
     await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
@@ -102,13 +102,13 @@ test.describe('Agent CRUD E2E Tests', () => {
   test('should update an agent', async ({ page }) => {
     await page.goto('/agents');
 
-    // Create a test agent first
+    // Create a test agent first using data-testid
     const agentName = `Update Test ${Date.now()}`;
-    await page.click('button:has-text("Create"), a:has-text("Create")');
+    await page.click('[data-testid="create-agent-button"], [data-testid="create-first-agent-button"]');
     await page.waitForNavigation();
     
-    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
-    await page.click('button:has-text("Create"), button:has-text("Save")');
+    await page.fill('[data-testid="agent-name"]', agentName);
+    await page.click('[data-testid="agentform-submit"]');
     await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 
     // Navigate to agent details
@@ -120,15 +120,15 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.click('button:has-text("Edit"), button:has-text("Update"), a:has-text("Edit")');
     await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 
-    // Update agent info
+    // Update agent info using data-testid
     const updatedName = `${agentName} Updated`;
-    const nameInput = await page.$('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]');
+    const nameInput = await page.$('[data-testid="agent-name"]');
     if (nameInput) {
-      await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', updatedName);
+      await page.fill('[data-testid="agent-name"]', updatedName);
       await page.fill('textarea[name="description"], textarea[placeholder*="description" i]', 'Updated description');
 
-      // Save changes
-      await page.click('button:has-text("Save"), button:has-text("Update")');
+      // Save changes using data-testid
+      await page.click('[data-testid="agentform-submit"]');
       await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 
       // Verify update
@@ -181,7 +181,7 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.goto('/agents/new');
 
     // Try to create without required fields
-    await page.click('button:has-text("Create"), button:has-text("Save")');
+    await page.click('[data-testid="agentform-submit"]');
 
     // Should show validation error or stay on form
     const urlAfter = page.url();
@@ -192,7 +192,7 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.goto('/agents/new');
 
     const agentName = `Preview Test ${Date.now()}`;
-    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
+    await page.fill('[data-testid="agent-name"]', agentName);
 
     // Check if preview is visible
     const previewName = await page.$('[data-testid="agent-preview-name"]');

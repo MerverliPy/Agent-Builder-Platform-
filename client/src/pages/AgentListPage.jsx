@@ -39,7 +39,7 @@ export default function AgentListPage() {
             <p className="text-gray-600">Discover and interact with AI agents</p>
           </div>
           {canCreate ? (
-            <Button as={Link} to="/agents/new" size="lg">
+            <Button as={Link} to="/agents/new" size="lg" data-testid="create-agent-button">
               Create Agent
             </Button>
           ) : (
@@ -60,7 +60,7 @@ export default function AgentListPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No agents yet</h3>
             <p className="text-gray-600 mb-6">Be the first to create an agent!</p>
             {canCreate && (
-              <Button as={Link} to="/agents/new">
+              <Button as={Link} to="/agents/new" data-testid="create-first-agent-button">
                 Create your first agent
               </Button>
             )}
