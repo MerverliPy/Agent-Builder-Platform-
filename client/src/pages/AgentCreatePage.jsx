@@ -73,7 +73,7 @@ export default function AgentCreatePage() {
               className="lg:col-span-2"
             >
               <AgentForm 
-                initial={templateData} 
+                initial={templateData || undefined} 
                 onSubmit={handleCreate}
                 submitLabel="Create Agent"
                 onFormChange={handleFormChange}
