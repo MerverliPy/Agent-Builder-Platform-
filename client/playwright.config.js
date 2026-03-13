@@ -6,7 +6,7 @@ const { defineConfig, devices } = require('@playwright/test');
  */
 module.exports = defineConfig({
   testDir: './tests/e2e',
-  testMatch: '**/*-simple.spec.js',
+  testMatch: '**/*.spec.js',
   /* Run tests in files in parallel */
   fullyParallel: false,
   /* Retry on CI only */
