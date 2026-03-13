@@ -1,4 +1,6 @@
-const BASE = process.env.REACT_APP_API_BASE || '/api'
+// Environment variable must be accessed at module level
+const BASE = import.meta.env.VITE_API_BASE || '/api'
+console.log('[API] Using base URL:', BASE)
 
 function authHeader() {
   try {

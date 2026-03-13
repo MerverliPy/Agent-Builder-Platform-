@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { API_BASE } from '../config/api'
 
 const SAMPLE = [
   '/avatars/avatar1.svg',
@@ -20,7 +21,7 @@ export default function AvatarPicker({ value, onChange }) {
     if (!f) return
     const form = new FormData()
     form.append('file', f)
-    const res = await fetch('/api/media/upload', { method: 'POST', body: form })
+    const res = await fetch(`${API_BASE}/media/upload`, { method: 'POST', body: form })
     if (!res.ok) return alert('upload failed')
     const body = await res.json()
     setUrl(body.url)

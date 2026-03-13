@@ -15,10 +15,55 @@ import { cn } from '../../lib/utils'
 
 const variants = {
   default: 'bg-white shadow-sm border border-neutral-200',
-  bordered: 'bg-white border-2 border-neutral-200',
+  bordered: 'bg-white border-2 border border-neutral-200',
   elevated: 'bg-white shadow-md border border-neutral-100',
   ghost: 'bg-transparent',
 }
+
+/**
+ * CardHeader Component
+ */
+export const CardHeader = ({ children, className, ...props }) => (
+  <div className={cn('mb-4', className)} {...props}>
+    {children}
+  </div>
+)
+
+/**
+ * CardTitle Component
+ */
+export const CardTitle = ({ children, className, ...props }) => (
+  <h3 className={cn('text-xl font-semibold text-neutral-900', className)} {...props}>
+    {children}
+  </h3>
+)
+
+/**
+ * CardDescription Component
+ */
+export const CardDescription = ({ children, className, ...props }) => (
+  <p className={cn('text-sm text-neutral-600 mt-1', className)} {...props}>
+    {children}
+  </p>
+)
+
+/**
+ * CardContent Component
+ */
+export const CardContent = ({ children, className, ...props }) => (
+  <div className={cn('', className)} {...props}>
+    {children}
+  </div>
+)
+
+/**
+ * CardFooter Component
+ */
+export const CardFooter = ({ children, className, ...props }) => (
+  <div className={cn('mt-4 flex items-center gap-2', className)} {...props}>
+    {children}
+  </div>
+)
 
 export const Card = React.forwardRef(({
   children,
@@ -76,49 +121,11 @@ export const Card = React.forwardRef(({
 
 Card.displayName = 'Card'
 
-/**
- * CardHeader Component
- */
-export const CardHeader = ({ children, className, ...props }) => (
-  <div className={cn('mb-4', className)} {...props}>
-    {children}
-  </div>
-)
-
-/**
- * CardTitle Component
- */
-export const CardTitle = ({ children, className, ...props }) => (
-  <h3 className={cn('text-xl font-semibold text-neutral-900', className)} {...props}>
-    {children}
-  </h3>
-)
-
-/**
- * CardDescription Component
- */
-export const CardDescription = ({ children, className, ...props }) => (
-  <p className={cn('text-sm text-neutral-600 mt-1', className)} {...props}>
-    {children}
-  </p>
-)
-
-/**
- * CardContent Component
- */
-export const CardContent = ({ children, className, ...props }) => (
-  <div className={cn('', className)} {...props}>
-    {children}
-  </div>
-)
-
-/**
- * CardFooter Component
- */
-export const CardFooter = ({ children, className, ...props }) => (
-  <div className={cn('mt-4 flex items-center gap-2', className)} {...props}>
-    {children}
-  </div>
-)
+// Attach subcomponents to Card for dot notation
+Card.Header = CardHeader
+Card.Title = CardTitle
+Card.Description = CardDescription
+Card.Content = CardContent
+Card.Footer = CardFooter
 
 export default Card

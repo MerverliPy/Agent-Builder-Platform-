@@ -21,6 +21,7 @@ export const Input = React.forwardRef(({
   iconPosition = 'left',
   className,
   containerClassName,
+  fullWidth, // Accept but don't use (component is full-width by default)
   ...props
 }, ref) => {
   const baseClasses = 'w-full px-3 py-2 border rounded-md shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-500'

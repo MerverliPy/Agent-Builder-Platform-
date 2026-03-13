@@ -6,32 +6,59 @@ import { Container, Section, Card, Input, Button } from '../components/ui'
 import { fadeIn, slideUp } from '../lib/animations'
 import { API_BASE } from '../config/api'
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { login } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [err, setErr] = useState(null)
   const [loading, setLoading] = useState(false)
 
   async function submit(e) {
     e.preventDefault()
     setErr(null)
+
+    // Validation
+    if (password !== confirmPassword) {
+      setErr('Passwords do not match')
+      return
+    }
+
+    if (password.length < 6) {
+      setErr('Password must be at least 6 characters')
+      return
+    }
+
     setLoading(true)
     
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      // Register the user
+      const registerRes = await fetch(`${API_BASE}/auth/register`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ username, password, roles: ['viewer'] }) 
+      })
+      
+      if (!registerRes.ok) {
+        const b = await registerRes.json().catch(()=>({error:'failed'}))
+        setErr(b.error || 'registration failed')
+        return
+      }
+
+      // Auto-login after successful registration
+      const loginRes = await fetch(`${API_BASE}/auth/login`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ username, password }) 
       })
       
-      if (!res.ok) {
-        const b = await res.json().catch(()=>({error:'failed'}))
-        setErr(b.error || 'login failed')
+      if (!loginRes.ok) {
+        setErr('Registration successful! Please login.')
+        setTimeout(() => window.location.href = '/login', 2000)
         return
       }
       
-      const data = await res.json()
+      const data = await loginRes.json()
       login(data.token)
       window.location.href = '/agents'
     } catch (err) {
@@ -51,12 +78,12 @@ export default function LoginPage() {
         >
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-            <p className="text-gray-600">Sign in to your account to continue</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create an account</h1>
+            <p className="text-gray-600">Get started with your custom agent builder</p>
           </div>
 
-          {/* Login Card */}
-          <Card padding="none">
+          {/* Registration Card */}
+          <Card>
             <div className="p-8">
               <form onSubmit={submit} className="space-y-6">
                 <Input
@@ -64,9 +91,10 @@ export default function LoginPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder="Choose a username"
                   required
                   autoComplete="username"
+                  hint="Your unique identifier"
                 />
 
                 <Input
@@ -74,9 +102,20 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  hint="At least 6 characters"
+                />
+
+                <Input
+                  label="Confirm Password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  autoComplete="new-password"
                 />
 
                 {err && (
@@ -90,6 +129,11 @@ export default function LoginPage() {
                   </motion.div>
                 )}
 
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                  <p className="font-medium mb-1">New accounts start with viewer access</p>
+                  <p className="text-xs text-blue-600">Contact an administrator to upgrade your permissions</p>
+                </div>
+
                 <Button 
                   type="submit" 
                   className="w-full" 
@@ -97,7 +141,7 @@ export default function LoginPage() {
                   loading={loading}
                   disabled={loading}
                 >
-                  Sign in
+                  Create account
                 </Button>
               </form>
             </div>
@@ -105,9 +149,9 @@ export default function LoginPage() {
 
           {/* Footer Note */}
           <p className="text-center text-sm text-gray-600 mt-6">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
-              Sign up
+            Already have an account?{' '}
+            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+              Sign in
             </Link>
           </p>
         </motion.div>

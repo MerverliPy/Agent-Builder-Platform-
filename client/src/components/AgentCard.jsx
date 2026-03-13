@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { API_BASE } from '../config/api'
 
 export default function AgentCard({ agent }) {
   const { token, user } = useAuth()
@@ -16,7 +17,7 @@ export default function AgentCard({ agent }) {
         <div className="agent-actions">
           <Link to={`/agents/${agent.id}`}>View</Link>
           {canEdit && <Link to={`/agents/${agent.id}/edit`}>Edit</Link>}
-          {canDelete && <a href="#" onClick={(e)=>{e.preventDefault(); if(confirm('Delete?')) { fetch(`/api/agents/${agent.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }).then(()=>window.location.reload()).catch(()=>alert('delete failed')) } }}>Delete</a>}
+          {canDelete && <a href="#" onClick={(e)=>{e.preventDefault(); if(confirm('Delete?')) { fetch(`${API_BASE}/agents/${agent.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }).then(()=>window.location.reload()).catch(()=>alert('delete failed')) } }}>Delete</a>}
         </div>
       </div>
     </article>

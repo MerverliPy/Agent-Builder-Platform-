@@ -6,16 +6,16 @@ After=network.target
 Type=simple
 WorkingDirectory=/home/calvin/Repo1/client
 EnvironmentFile=-/etc/cabp.env
-Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=PATH=/home/calvin/.nvm/versions/node/v20.20.1/bin:/usr/local/bin:/usr/bin:/bin
 Environment=HOST=100.81.83.98
 Environment=PORT=3000
-ExecStart=/usr/bin/env node static-server.js
+ExecStart=/home/calvin/.nvm/versions/node/v20.20.1/bin/node static-server.js
 Restart=always
 RestartSec=5
 StandardOutput=append:/var/log/cabp-client.log
 StandardError=append:/var/log/cabp-client.log
 # The installer replaces REPLACE_USER with the user who owns the checkout
-User=REPLACE_USER
+User=calvin
 KillMode=process
 
 [Install]

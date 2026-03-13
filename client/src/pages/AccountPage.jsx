@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { Container, Section, Card, Input, Button, Badge, Stack } from '../components/ui'
 import { fadeIn, slideUp } from '../lib/animations'
+import { API_BASE } from '../config/api'
 
 export default function AccountPage() {
   const { token, user, logout } = useAuth()
@@ -14,7 +15,7 @@ export default function AccountPage() {
     let mounted = true
     async function fetchMe() {
       try {
-        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         if (!res.ok) throw new Error('failed')
         const j = await res.json()
         if (mounted) setServerUser(j)
@@ -28,14 +29,14 @@ export default function AccountPage() {
 
   async function handleChangePassword(e) {
     e.preventDefault()
-    const current = e.target.current.value
-    const next = e.target.next.value
+    const current = e.target.elements.current.value
+    const next = e.target.elements.next.value
     
     setStatus(null)
     setLoading(true)
     
     try {
-      const res = await fetch('/api/auth/change-password', { 
+      const res = await fetch(`${API_BASE}/auth/change-password`, { 
         method: 'POST', 
         headers: { 
           'Content-Type': 'application/json', 
@@ -69,7 +70,7 @@ export default function AccountPage() {
       <Section className="py-12 min-h-[calc(100vh-4rem)] flex items-center">
         <Container size="sm">
           <Card>
-            <Card.Content className="p-12 text-center">
+            <div className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -78,7 +79,7 @@ export default function AccountPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Sign in required</h2>
               <p className="text-gray-600 mb-6">You need to sign in to view your account</p>
               <Button href="/login">Sign in</Button>
-            </Card.Content>
+            </div>
           </Card>
         </Container>
       </Section>
@@ -102,11 +103,11 @@ export default function AccountPage() {
 
           {/* User Information Card */}
           <Card>
-            <Card.Header>
-              <Card.Title>User Information</Card.Title>
-              <Card.Description>Your account details and roles</Card.Description>
-            </Card.Header>
-            <Card.Content>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">User Information</h2>
+              <p className="text-gray-600">Your account details and roles</p>
+            </div>
+            <div>
               <Stack spacing={4}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
@@ -137,16 +138,16 @@ export default function AccountPage() {
                   <div className="text-sm text-gray-500">Loading server information...</div>
                 )}
               </Stack>
-            </Card.Content>
+            </div>
           </Card>
 
           {/* Change Password Card */}
           <Card>
-            <Card.Header>
-              <Card.Title>Change Password</Card.Title>
-              <Card.Description>Update your account password</Card.Description>
-            </Card.Header>
-            <Card.Content>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Change Password</h2>
+              <p className="text-gray-600">Update your account password</p>
+            </div>
+            <div>
               <form onSubmit={handleChangePassword} className="space-y-6">
                 <Input
                   label="Current Password"
@@ -189,23 +190,23 @@ export default function AccountPage() {
                   Change Password
                 </Button>
               </form>
-            </Card.Content>
+            </div>
           </Card>
 
           {/* Sign Out Card */}
           <Card>
-            <Card.Header>
-              <Card.Title>Sign Out</Card.Title>
-              <Card.Description>End your current session</Card.Description>
-            </Card.Header>
-            <Card.Content>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Sign Out</h2>
+              <p className="text-gray-600">End your current session</p>
+            </div>
+            <div>
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
               >
                 Sign out
               </Button>
-            </Card.Content>
+            </div>
           </Card>
         </motion.div>
       </Container>
