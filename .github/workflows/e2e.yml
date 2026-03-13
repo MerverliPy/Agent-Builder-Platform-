@@ -50,7 +50,7 @@ jobs:
         working-directory: client
         run: |
           # serve the static build on port 3000
-          npx serve -s build -l 3000 &> /tmp/client.log &
+          npx serve -s dist -l 3000 &> /tmp/client.log &
           echo $! > /tmp/client.pid
 
       - name: Wait for client

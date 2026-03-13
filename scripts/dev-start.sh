@@ -29,7 +29,7 @@ cd client
 npm ci
 npm run build
 echo "Serving client build on port 3000 (logs -> /tmp/cabp-client.log)"
-npx serve -s build -l 3000 &> /tmp/cabp-client.log &
+npx serve -s dist -l 3000 &> /tmp/cabp-client.log &
 echo $! > /tmp/cabp-client.pid
 cd - > /dev/null
 
