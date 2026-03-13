@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { Container, Section, Card, Input, Button, Badge, Stack } from '../components/ui'
+import { fadeIn, slideUp } from '../lib/animations'
 
 export default function AccountPage() {
   const { token, user, logout } = useAuth()
   const [serverUser, setServerUser] = useState(null)
   const [status, setStatus] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -26,33 +30,185 @@ export default function AccountPage() {
     e.preventDefault()
     const current = e.target.current.value
     const next = e.target.next.value
+    
+    setStatus(null)
+    setLoading(true)
+    
     try {
-      const res = await fetch('/api/auth/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: next }) })
+      const res = await fetch('/api/auth/change-password', { 
+        method: 'POST', 
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${token}` 
+        }, 
+        body: JSON.stringify({ currentPassword: current, newPassword: next }) 
+      })
+      
       if (!res.ok) {
         const b = await res.json().catch(()=>({error:'failed'}))
-        setStatus(b.error || 'change failed')
+        setStatus({ type: 'error', message: b.error || 'change failed' })
         return
       }
-      setStatus('password changed')
+      
+      setStatus({ type: 'success', message: 'Password changed successfully' })
       e.target.reset()
-    } catch (err) { setStatus(err.message) }
+    } catch (err) { 
+      setStatus({ type: 'error', message: err.message })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!user) return <div className="container">Sign in to view account</div>
+  function handleLogout() {
+    logout()
+    window.location.href = '/'
+  }
+
+  if (!user) {
+    return (
+      <Section className="py-12 min-h-[calc(100vh-4rem)] flex items-center">
+        <Container size="sm">
+          <Card>
+            <Card.Content className="p-12 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Sign in required</h2>
+              <p className="text-gray-600 mb-6">You need to sign in to view your account</p>
+              <Button href="/login">Sign in</Button>
+            </Card.Content>
+          </Card>
+        </Container>
+      </Section>
+    )
+  }
 
   return (
-    <div className="container">
-      <h2>Account</h2>
-      <div><strong>Token user:</strong> {user.username} • roles: {(user.roles||[]).join(', ')}</div>
-      <div>{serverUser ? <div><strong>Server user:</strong> {serverUser.username} • id: {serverUser.id}</div> : <div>Loading server info...</div>}</div>
-      <h3>Change password</h3>
-      <form onSubmit={handleChangePassword} className="form">
-        <label>Current<br /><input name="current" type="password" /></label>
-        <label>New<br /><input name="next" type="password" /></label>
-        <p><button className="btn">Change</button></p>
-      </form>
-      <p><button className="btn" onClick={()=>{ logout(); window.location.href='/' }}>Sign out</button></p>
-      {status && <div className="field-error">{status}</div>}
-    </div>
+    <Section className="py-12">
+      <Container size="md">
+        <motion.div
+          variants={fadeIn}
+          initial="initial"
+          animate="animate"
+          className="space-y-8"
+        >
+          {/* Page Header */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Settings</h1>
+            <p className="text-gray-600">Manage your account information and security</p>
+          </div>
+
+          {/* User Information Card */}
+          <Card>
+            <Card.Header>
+              <Card.Title>User Information</Card.Title>
+              <Card.Description>Your account details and roles</Card.Description>
+            </Card.Header>
+            <Card.Content>
+              <Stack spacing={4}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                  <div className="text-lg font-semibold text-gray-900">{user.username}</div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Roles</label>
+                  <div className="flex flex-wrap gap-2">
+                    {(user.roles || []).length > 0 ? (
+                      user.roles.map(role => (
+                        <Badge key={role} variant="primary">{role}</Badge>
+                      ))
+                    ) : (
+                      <Badge variant="secondary">No roles assigned</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {serverUser && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">User ID</label>
+                    <div className="font-mono text-sm text-gray-600">{serverUser.id}</div>
+                  </div>
+                )}
+
+                {!serverUser && (
+                  <div className="text-sm text-gray-500">Loading server information...</div>
+                )}
+              </Stack>
+            </Card.Content>
+          </Card>
+
+          {/* Change Password Card */}
+          <Card>
+            <Card.Header>
+              <Card.Title>Change Password</Card.Title>
+              <Card.Description>Update your account password</Card.Description>
+            </Card.Header>
+            <Card.Content>
+              <form onSubmit={handleChangePassword} className="space-y-6">
+                <Input
+                  label="Current Password"
+                  type="password"
+                  name="current"
+                  placeholder="Enter your current password"
+                  required
+                  autoComplete="current-password"
+                />
+
+                <Input
+                  label="New Password"
+                  type="password"
+                  name="next"
+                  placeholder="Enter your new password"
+                  required
+                  autoComplete="new-password"
+                />
+
+                {status && (
+                  <motion.div
+                    variants={slideUp}
+                    initial="initial"
+                    animate="animate"
+                    className={`p-4 rounded-lg text-sm ${
+                      status.type === 'error' 
+                        ? 'bg-red-50 border border-red-200 text-red-700'
+                        : 'bg-green-50 border border-green-200 text-green-700'
+                    }`}
+                  >
+                    {status.message}
+                  </motion.div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  loading={loading}
+                  disabled={loading}
+                >
+                  Change Password
+                </Button>
+              </form>
+            </Card.Content>
+          </Card>
+
+          {/* Sign Out Card */}
+          <Card>
+            <Card.Header>
+              <Card.Title>Sign Out</Card.Title>
+              <Card.Description>End your current session</Card.Description>
+            </Card.Header>
+            <Card.Content>
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+              >
+                Sign out
+              </Button>
+            </Card.Content>
+          </Card>
+        </motion.div>
+      </Container>
+    </Section>
   )
 }

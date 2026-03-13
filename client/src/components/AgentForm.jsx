@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import AvatarPicker from './AvatarPicker'
+import { Input, Button, Stack, Card } from './ui'
 
 export default function AgentForm({ initial = {}, onSubmit, submitLabel = 'Save' }) {
   const [name, setName] = useState(initial.name || '')
@@ -37,36 +38,68 @@ export default function AgentForm({ initial = {}, onSubmit, submitLabel = 'Save'
   }
 
   return (
-    <form onSubmit={handleSubmit} className="agent-form">
-      <div className="form-row">
-        <label htmlFor="agent-name">Name</label>
-        <input id="agent-name" aria-label="Name" value={name} onChange={e=>setName(e.target.value)} />
-        {errors.name && <div className="field-error">{errors.name}</div>}
-      </div>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <Card.Content className="p-6">
+          <Stack spacing={6}>
+            <Input
+              id="agent-name"
+              label="Name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              error={errors.name}
+              hint="Give your agent a unique and descriptive name"
+              required
+            />
 
-      <div className="form-row">
-        <label>Avatar</label>
-        <AvatarPicker value={avatar} onChange={setAvatar} />
-      </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Avatar</label>
+              <AvatarPicker value={avatar} onChange={setAvatar} />
+            </div>
 
-      <div className="form-row">
-        <label>Skills (comma separated)</label>
-        <input value={skills} onChange={e=>setSkills(e.target.value)} />
-      </div>
+            <Input
+              label="Skills"
+              value={skills}
+              onChange={e => setSkills(e.target.value)}
+              placeholder="e.g., JavaScript, React, Node.js"
+              hint="Enter comma-separated skills"
+            />
 
-      <div className="form-row">
-        <label>Response style</label>
-        <input value={responseStyle} onChange={e=>setResponseStyle(e.target.value)} />
-      </div>
+            <Input
+              label="Response Style"
+              value={responseStyle}
+              onChange={e => setResponseStyle(e.target.value)}
+              placeholder="e.g., Professional, Friendly, Technical"
+              hint="Describe how the agent should communicate"
+            />
 
-      <div className="form-row">
-        <label>Roles (comma separated)</label>
-        <input value={roles} onChange={e=>setRoles(e.target.value)} />
-      </div>
+            <Input
+              label="Roles"
+              value={roles}
+              onChange={e => setRoles(e.target.value)}
+              placeholder="e.g., developer, designer, admin"
+              hint="Enter comma-separated roles for access control"
+            />
+          </Stack>
+        </Card.Content>
 
-      <div className="form-actions">
-        <button type="submit" className="btn" disabled={submitting}>{submitting ? 'Saving...' : submitLabel}</button>
-      </div>
+        <Card.Footer className="flex justify-end gap-3 px-6 py-4 bg-gray-50">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.history.back()}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            loading={submitting}
+            disabled={submitting}
+          >
+            {submitting ? 'Saving...' : submitLabel}
+          </Button>
+        </Card.Footer>
+      </Card>
     </form>
   )
 }
