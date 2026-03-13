@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import AvatarPicker from './AvatarPicker'
 import FormSection from './form/FormSection'
+import TagInput from './form/TagInput'
+import ChipSelect from './form/ChipSelect'
+import StyleSelector from './form/StyleSelector'
 import { Input, Button, Card, Stack } from './ui'
 
 export default function AgentForm({ 
@@ -11,9 +14,10 @@ export default function AgentForm({
   onFormChange = null,
 }) {
   const [name, setName] = useState(initial.name || '')
-  const [skills, setSkills] = useState((initial.skills || []).join(','))
+  // Skills and roles are now arrays internally
+  const [skills, setSkills] = useState(initial.skills || [])
   const [responseStyle, setResponseStyle] = useState(initial.responseStyle || '')
-  const [roles, setRoles] = useState((initial.roles || []).join(','))
+  const [roles, setRoles] = useState(initial.roles || [])
   const [avatar, setAvatar] = useState(initial.avatar || '')
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -39,21 +43,19 @@ export default function AgentForm({
     }
   }
 
-  const handleSkillsChange = (val) => {
-    setSkills(val)
+  // Skills now receives array directly from TagInput
+  const handleSkillsChange = (skillsArray) => {
+    setSkills(skillsArray)
     if (onFormChange) {
-      onFormChange({ 
-        skills: val.split(',').map(s=>s.trim()).filter(Boolean)
-      })
+      onFormChange({ skills: skillsArray })
     }
   }
 
-  const handleRolesChange = (val) => {
-    setRoles(val)
+  // Roles now receives array directly from ChipSelect
+  const handleRolesChange = (rolesArray) => {
+    setRoles(rolesArray)
     if (onFormChange) {
-      onFormChange({ 
-        roles: val.split(',').map(s=>s.trim()).filter(Boolean)
-      })
+      onFormChange({ roles: rolesArray })
     }
   }
 
@@ -70,13 +72,16 @@ export default function AgentForm({
     setErrors(e)
     if (Object.keys(e).length) return
     setSubmitting(true)
+    
+    // Skills and roles are already arrays, no conversion needed
     const payload = {
       name: name.trim(),
       avatar: avatar || null,
-      skills: skills.split(',').map(s=>s.trim()).filter(Boolean),
+      skills: skills,
       responseStyle: responseStyle.trim(),
-      roles: roles.split(',').map(s=>s.trim()).filter(Boolean)
+      roles: roles
     }
+    
     try {
       await onSubmit(payload)
     } finally {
@@ -124,20 +129,19 @@ export default function AgentForm({
                 title="Capabilities"
                 description="Define what your agent can do and who can access it"
               >
-                <Input
+                <TagInput
                   label="Skills"
                   value={skills}
-                  onChange={e => handleSkillsChange(e.target.value)}
-                  placeholder="e.g., JavaScript, React, Node.js"
-                  hint="Enter comma-separated skills"
+                  onChange={handleSkillsChange}
+                  placeholder="Type a skill and press Enter..."
+                  hint="Add skills by typing and pressing Enter, or click suggestions"
                 />
 
-                <Input
+                <ChipSelect
                   label="Roles"
                   value={roles}
-                  onChange={e => handleRolesChange(e.target.value)}
-                  placeholder="e.g., developer, designer, admin"
-                  hint="Enter comma-separated roles for access control"
+                  onChange={handleRolesChange}
+                  hint="Select preset roles or add custom ones"
                 />
               </FormSection>
             </div>
@@ -148,12 +152,11 @@ export default function AgentForm({
                 title="Behavior"
                 description="Configure how your agent communicates"
               >
-                <Input
+                <StyleSelector
                   label="Response Style"
                   value={responseStyle}
-                  onChange={e => handleResponseStyleChange(e.target.value)}
-                  placeholder="e.g., Professional, Friendly, Technical"
-                  hint="Describe how the agent should communicate"
+                  onChange={handleResponseStyleChange}
+                  hint="Choose a communication style for your agent"
                 />
               </FormSection>
             </div>
