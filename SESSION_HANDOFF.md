@@ -16,10 +16,10 @@ Stabilize Playwright E2E for the client (prefer `data-testid` selectors, use `fi
 - **Inspected CI E2E run (23070785396)**: 15/21 tests passed, 6 failed due to API routing issue.
 - **Diagnosed root cause**: Static client build defaults to relative `/api` path, but API runs on different port in CI (5000 vs 3000).
 - **Fixed**: Added `VITE_API_BASE=http://localhost:5000/api` env var to client build step in `.github/workflows/e2e.yml`.
+- **Verified fix (run 23071229646)**: All 21 simple E2E tests now pass in CI (commit f36a4e4).
 
 ## Pending Work
 
-- **Re-run GitHub Actions E2E workflow and verify all tests pass after API routing fix.**
 - Convert remaining non-simple E2E specs to prefer `data-testid` and the helper where gaps remain (`tests/e2e/*.spec.js`).
 - Add `data-testid` to any remaining frequently-targeted UI elements (agent list items, create/save buttons across pages).
 - Implement test isolation (database cleanup) for full E2E reliability and repeatability.
@@ -46,19 +46,15 @@ Stabilize Playwright E2E for the client (prefer `data-testid` selectors, use `fi
 
 ## Known Issues
 
-- **CI E2E failures (run 23070785396)**: 6 tests failed because static client couldn't reach API server on different port.
-  - Failed tests: register new user, login, logout, duplicate user error, validate agent fields, access agents after login.
-  - Root cause: Client built without `VITE_API_BASE` env var, so API calls went to `http://localhost:3000/api/*` (client port) instead of `http://localhost:5000/api/*` (server port).
-  - API returned HTML (SPA fallback) instead of JSON, causing "Unexpected token '<'" parse errors.
-  - **Fixed in commit (pending)**: Added `VITE_API_BASE=http://localhost:5000/api` to build step.
+- **[RESOLVED] CI E2E failures (run 23070785396)**: Fixed in commit f36a4e4, verified passing in run 23071229646.
 - Some non-simple E2E tests still use fallback or placeholder selectors — audit and convert these to `data-testid` for full-suite stability.
 - Search input components render readonly inputs; tests must avoid filling readonly inputs (the helper already guards against this).
 
 ## Exact Next Step
 
-Commit the CI fix and trigger a new E2E workflow run to verify all tests pass:
+**Simple E2E CI objective complete! All 21 tests pass locally and in CI.** Next steps for full E2E hardening:
 
-1. Commit changes: `git add .github/workflows/e2e.yml SESSION_HANDOFF.md && git commit -m "fix(ci): set VITE_API_BASE for E2E tests to reach API server" && git push`
-2. Monitor the new workflow run: `gh run list --workflow=e2e.yml`
-3. When complete, verify all 21 tests pass: `gh run view <run-id>`
-4. Download artifacts if needed: `gh run download <run-id>`
+1. Convert remaining non-simple E2E specs (`tests/e2e/*.spec.js`) to use `data-testid` selectors and `fillAuthFields` helper.
+2. Add test isolation: implement database cleanup between tests for repeatability.
+3. Expand `data-testid` coverage to remaining UI elements (agent list items, buttons across all pages).
+4. Run full E2E suite in CI and address any additional failures.
