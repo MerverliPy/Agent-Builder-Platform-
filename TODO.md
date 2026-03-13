@@ -2,180 +2,56 @@
 
 ## High Priority
 
-- Implement Phase 5: Live preview real-time updates with smooth transitions
-- Implement Phase 5: Drag-and-drop avatar upload functionality
-- Implement Phase 5: Smart input autocomplete (skills, roles, response styles)
-- Fix E2E test form selectors by adding data-testid attributes to React components
+- Add `data-testid` attributes to key form inputs for Playwright stability
+- Implement drag-and-drop avatar upload for AgentCreatePage
 - Implement test isolation with database cleanup between E2E tests
-- Create Page Object Model for E2E test maintainability
-- Change admin password from default `admin123` to secure password
-- Integrate E2E tests into CI/CD pipeline (GitHub Actions)
+- Create Page Object Model for E2E maintainability and stable selectors
+- Change admin password from default `admin123` to a secure value
+- Integrate E2E tests into CI (ensure Playwright install/logging robust on ubuntu-24.04)
 
 ## Medium Priority
 
 - Add visual regression testing with Playwright or Percy
-- Add more E2E test coverage: user profile, agent templates, bulk operations
-- Improve E2E test performance (currently timing-sensitive)
-- Implement advanced search and filtering functionality
-- Expand navigation with additional menu items
-- Implement toast notification system using Framer Motion
-- Implement modal dialog component for confirmations
-- Add search and filter functionality to agent list
-- Improve visual design consistency with design tokens
-- Increase test coverage for edge cases and error handling
-- Add Dependabot or Renovate for automated dependency updates
-- Document cleanup task scheduling (cron/systemd timer) for uploads cleanup
+- Expand E2E coverage: user profile flows, agent templates, bulk operations
+- Improve E2E test performance and flakiness mitigations (timeouts, retries)
+- Implement advanced search and filtering for agents
+- Add toast notification system and modal dialog primitives
 
 ## Low Priority
 
-- Implement dark mode using design tokens and Tailwind dark: variants
-- Add nginx reverse proxy with TLS and HSTS for public exposure
+- Implement dark mode using design tokens and Tailwind dark variants
+- Add nginx reverse proxy with TLS/HSTS for public exposure
 - Move uploads to S3 (or object storage) with signed URLs
-- Add autoscaling and k8s manifests (Helm) for cloud deploys
-- Add persistent analytics/usage dashboard (Prometheus/Grafana) and alerts
-- Migrate to TypeScript for type safety
-- Set up Storybook for component documentation
-- Add advanced filtering (by skills, roles, creation date)
-- Implement bulk operations (select multiple agents, bulk delete)
-- Add i18n support for multiple languages
-- Implement Progressive Web App features (offline support, service workers)
+- Add autoscaling manifests (Kubernetes/Helm) for cloud deploys
+- Migrate codebase to TypeScript (long-term)
 
 ## Technical Debt
 
 - Consolidate logging and add log rotation for `/var/log/cabp-*.log`
-- Remove or archive stray `.git` at `/home/calvin` if not intended repo root
-- Review and harden client dependency chain with targeted `overrides` if needed
 - Fix PostCSS module type warning (add "type": "module" to package.json or rename config)
+- Review and harden client dependency chain and address dev-dep vulnerabilities
 - Clean up unused CSS after Tailwind migration
 - Improve mobile cache-busting strategy for deployments
-- Address dev dependency vulnerabilities in react-scripts (or remove if fully migrated to Vitest)
+
+## New / Discovered Tasks
+
+- Fetch and analyze E2E run logs for run `23065345021` and fix failures (Playwright install or brittle selectors).
+- Harden Ollama provider handling: availability retries, cache invalidation, and tests.
+- Add conversation export (download transcript) in sandbox UI.
+- Add integration tests for LLM routing and conversation persistence (mock + real provider cases).
 
 ## Completed
 
-- Move project into `/home/calvin/Repo1` and initialize git; pushed to GitHub
-- Created dev start/stop scripts and `client/static-server.js` for IP binding
-- Added Dockerfiles and `docker-compose.yml` for host-network compose
-- Added systemd unit templates and installer scaffold under `systemd/`
-- Created and added host SSH key to GitHub
-- Updated CI workflows and set temporary `JWT_SECRET` Actions secret
-- Upgraded server `nodemon` to 3.x and updated server lockfile (audit clean)
-- Created `fix/client-audit` branch with updated lockfile and passing tests
-- Added `client/vite-migration-plan.md`
-- Migrated client from CRA to Vite 8.0.0 (PR #2 merged to main)
-- Renamed all JSX files from .js to .jsx (15 files)
-- Updated build artifacts from `build/` to `dist/` across codebase
-- Fixed CI: removed npm cache config, upgraded Node 18→20 for Vite compatibility
-- Verified CI passes: build, tests, bundle optimization
-- Fixed client Dockerfile: upgraded to Node.js 20 for Vite 8 compatibility
-- Fixed docker-build.yml: added HOST=0.0.0.0 for server container
-- Verified Docker Build workflow passes (run #23034876087): both images build, smoke tests pass
-- Evaluated fix/client-audit branch: confirmed obsolete (vulnerabilities only in dev deps)
-- Moved react-scripts to devDependencies (production builds use Vite only)
-- Deleted fix/client-audit branch locally and remotely
-- Rotated JWT_SECRET in GitHub Actions (32-byte base64, set 2026-03-13)
-- Documented JWT_SECRET value in SESSION_HANDOFF.md for host systemd installation
-- Installed systemd units on host with absolute nvm node paths
-- Configured server (port 5000) and client (port 3000) services
-- Verified services running and accessible via Tailscale (100.81.83.98)
-- Production deployment complete: Docker builds pass, JWT rotated, systemd running
-- Created `CURRENT.txt` documenting project capabilities and UI usage
-- Implemented modern frontend architecture with Tailwind CSS 3.4 and Framer Motion
-- Created comprehensive design system with tokens, colors, typography, spacing, shadows
-- Built 10+ reusable UI primitive components (Button, Card, Input, Container, Badge, Avatar, Loading)
-- Implemented layout system (Header, Footer, PageLayout) with mobile responsive navigation
-- Created feature components (AgentCard, AgentDetail) with RBAC integration
-- Built 7 custom React hooks (useMediaQuery, useDebounce, useScrollPosition, etc.)
-- Implemented animation system with 10+ Framer Motion variants
-- Created modern HomePage with hero section and feature highlights
-- Ensured full accessibility (ARIA labels, keyboard nav, focus states, WCAG AA/AAA)
-- Verified production build: 317KB JS (102KB gzipped), 25KB CSS (5KB gzipped)
-- Documented architecture in FRONTEND_ARCHITECTURE.md (377 lines) and FRONTEND_IMPLEMENTATION_SUMMARY.md (305 lines)
-- Committed and pushed frontend architecture (commit f6822c9, 28 files, 5,111 insertions)
-- Updated all pages to use new UI components: AgentListPage, LoginPage, AccountPage, AgentCreatePage, AgentEditPage
-- Fixed systemd services with absolute NVM node path configuration
-- Fixed Tailscale API connectivity with centralized config module and environment variables
-- Created registration page with auto-login and validation
-- Fixed mobile compatibility issues (React error #130) by removing Card subcomponent usage
-- Added global error handler for mobile debugging
-- Created admin account: username `admin`, password `admin123`
-- Final production build: 331KB JS (105KB gzipped), 27KB CSS (5.6KB gzipped)
-- System fully operational via Tailscale network (frontend port 3000, backend port 5000)
-- Implemented comprehensive automated testing:
-  - Backend: Jest + Supertest (42/42 tests passing - 100%)
-  - Frontend: Vitest + React Testing Library (46/46 tests passing - 100%)
-  - Created test infrastructure and configuration files
-  - Added test scripts to package.json files
-  - Created TESTING.md comprehensive guide
-- Fixed React error #130 on AccountPage (Card subcomponent initialization order)
-- Fixed Card component to declare subcomponents before attachment
-- Rebuilt and redeployed frontend with all testing fixes
-- **PHASE 1: Global Product Navigation Shell (COMPLETED)**
-  - Implemented TopNavbar with modular components (5 navigation components)
-  - Created TemplatesPage with route integration
-  - Fixed Templates route 404 error
-  - Implemented mobile hamburger menu with animations
-  - Verified production build: 336.44 KB JS (105.73 KB gzipped), 28.51 KB CSS (5.72 KB gzipped)
-  - Ran 21 comprehensive verification tests (100% passing)
-  - Zero build errors, zero console errors, zero breaking changes
-  - Production ready with full testing verification
-  - Committed and pushed Phase 1 (commit db92100)
-- **PHASE 2: Homepage Redesign (COMPLETED)**
-  - Implemented 5 home section components (Hero, QuickStart, RecentAgents, Capabilities, Footer)
-  - Refactored HomePage.jsx to use new modular sections
-  - Integrated real agent data from API
-  - Added Framer Motion animations with stagger effects
-  - Implemented responsive design (mobile/tablet/desktop)
-  - Authentication-aware content visibility
-  - Verified production build: 341.92 KB JS (106.79 KB gzip), 28.81 KB CSS (5.76 KB gzip)
-  - All 88 tests passing (46 frontend + 42 backend)
-  - Zero build errors, zero console errors, zero breaking changes
-  - All 5 routes accessible and functional
-  - Deployed and verified system stability
-  - Committed and pushed Phase 2 (commit 99a1788)
-- **PHASE 3: Templates Page (COMPLETED)**
-  - Created TemplateCard component for reusable template UI
-  - Implemented TemplatesPage with 6 pre-configured templates
-  - 6 templates: Developer Assistant, Research Analyst, Customer Support, Creative Writer, Data Analyst, Technical Reviewer
-  - Integrated template prefilling in AgentCreatePage via location state
-  - Added animations and hover effects
-  - All tests passing (46/46), build successful, no console errors
-  - Committed and pushed Phase 3 (commit ee32659)
-- **PHASE 4: Create Agent Page Redesign (COMPLETED)**
-  - Created FormSection component for organizing form fields into logical sections
-  - Created AgentPreviewCard component for right-panel preview with sticky positioning
-  - Redesigned AgentCreatePage with responsive two-column layout
-    - Desktop (lg): Form (2 cols) + Preview (1 col sticky)
-    - Mobile/Tablet: Single column stacked layout
-  - Updated AgentForm with sectioned UI (Identity, Capabilities, Behavior)
-  - Added live preview updates via onFormChange callback
-  - Form submission behavior preserved and tested
-  - Tests: 46/46 passing, build successful, no console errors
-  - Created QA_TESTING_PHASE4.md with comprehensive manual test steps
-  - Committed and pushed Phase 4 (commit 4ec475c)
-- **Tailscale IP Configuration Audit (COMPLETED)**
-  - Audited all frontend, backend, and infrastructure configurations
-  - Frontend: client/.env configured with Tailscale IP
-  - Frontend systemd service: HOST=100.81.83.98 configured
-  - Backend systemd service: Fixed missing HOST=100.81.83.98 environment variable
-  - Docker Compose: Verified HOST=0.0.0.0 configuration
-  - CORS: Verified permissive configuration
-  - Installation script: Verified Tailscale IP setup
-  - Created TAILSCALE_CONFIG_AUDIT.md with comprehensive audit documentation
-  - Committed and pushed Tailscale fix (commit f609904)
-- **Production Bug Fixes and Testing (COMPLETED)**
-  - Fixed null templateData bug in AgentCreatePage (commit 4a85f2e)
-  - Fixed agent list endpoint filtering to exclude users (commit 71075e2)
-  - Conducted comprehensive manual integration testing (30+ tests)
-  - Verified all unit tests passing: 88/88 total (46 frontend + 42 backend)
-  - Created TESTING_RESULTS.md with complete test documentation
-  - Production system stable and accessible via Tailscale
-  - Committed bug fixes (commits 4a85f2e, 71075e2, d28c7d6)
-- **E2E Testing Framework Implementation (COMPLETED)**
-  - Set up Playwright 1.58.2 with chromium browser
-  - Created 4 simplified test suites: auth (5 tests), CRUD (5 tests), navigation (6 tests), errors (7 tests)
-  - Implemented test utilities for common operations
-  - Created 4 comprehensive test suites for future enhancement
-  - Added Playwright configuration with HTML reporting and failure screenshots
-  - Identified and documented test improvement opportunities
-  - Created E2E_TESTING_REPORT.md with 100+ line documentation
-  - Committed E2E framework (commit 708ea71)
+- Migrated client from CRA to Vite and updated build pipeline
+- Created systemd unit templates and installer scaffold
+- Added Dockerfiles and docker-compose for local/container runs
+- Implemented frontend smart inputs (TagInput, ChipSelect, StyleSelector)
+- Implemented Agent Sandbox (chat UI, mock responses, session persistence)
+- Implemented Ollama provider support and in-memory conversationService
+- Fixed Playwright install step in CI (`npx playwright install --with-deps`) and verified Docker Build & CI workflows
+
+## Recently Completed (context)
+
+- Added Ollama provider support and conversationService; updated frontend model selector; made Playwright install step robust (commit `8e9866f`).
+
+(End of file)

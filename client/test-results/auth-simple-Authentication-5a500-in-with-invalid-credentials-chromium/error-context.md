@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - link "CA Agent Builder" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: CA
+        - generic [ref=e9]: Agent Builder
+      - navigation [ref=e10]:
+        - link "Agents" [ref=e11] [cursor=pointer]:
+          - /url: /agents
+        - link "Templates" [ref=e12] [cursor=pointer]:
+          - /url: /templates
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - textbox "Search agents..." [ref=e15]
+          - generic: ⌘K
+        - button "Cmd + K" [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: Cmd
+          - generic [ref=e18]: +
+          - generic [ref=e19]: K
+        - generic [ref=e20]:
+          - button "Sign In" [ref=e21] [cursor=pointer]
+          - button "Get Started" [ref=e22] [cursor=pointer]
+  - main [ref=e23]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Welcome back" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Sign in to your account to continue
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]: Username
+          - textbox "Enter your username" [ref=e37]
+        - generic [ref=e38]:
+          - generic [ref=e39]: Password
+          - textbox "Enter your password" [ref=e41]
+        - button "Sign in" [ref=e42] [cursor=pointer]
+      - paragraph [ref=e43]:
+        - text: Don't have an account?
+        - link "Sign up" [ref=e44] [cursor=pointer]:
+          - /url: /register
+  - contentinfo [ref=e45]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - generic [ref=e51]: CA
+            - generic [ref=e52]: Agent Builder
+          - paragraph [ref=e53]: Build and manage custom AI agents with ease. Create, configure, and deploy intelligent agents for your workflows.
+        - generic [ref=e54]:
+          - heading "Product" [level=3] [ref=e55]
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - link "Home" [ref=e58] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e59]:
+              - link "Agents" [ref=e60] [cursor=pointer]:
+                - /url: /agents
+            - listitem [ref=e61]:
+              - link "About" [ref=e62] [cursor=pointer]:
+                - /url: /about
+        - generic [ref=e63]:
+          - heading "Support" [level=3] [ref=e64]
+          - list [ref=e65]:
+            - listitem [ref=e66]:
+              - link "Documentation" [ref=e67] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e68]:
+              - link "Help Center" [ref=e69] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e70]:
+              - link "Contact" [ref=e71] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e72]:
+          - heading "Legal" [level=3] [ref=e73]
+          - list [ref=e74]:
+            - listitem [ref=e75]:
+              - link "Privacy" [ref=e76] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e77]:
+              - link "Terms" [ref=e78] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e79]:
+              - link "Security" [ref=e80] [cursor=pointer]:
+                - /url: /security
+      - generic [ref=e82]:
+        - paragraph [ref=e83]: © 2026 Custom Agent Builder Platform. All rights reserved.
+        - generic [ref=e84]:
+          - link "GitHub" [ref=e85] [cursor=pointer]:
+            - /url: https://github.com
+            - img [ref=e86]
+          - link "Twitter" [ref=e88] [cursor=pointer]:
+            - /url: https://twitter.com
+            - img [ref=e89]
+```
