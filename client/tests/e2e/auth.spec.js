@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { clearAuthToken, setAuthToken, getAuthToken, getCurrentUser, generateUniqueEmail, fillForm } = require('./utils');
+const { clearAuthToken, setAuthToken, getAuthToken, getCurrentUser, generateUniqueEmail, fillAuthFields } = require('./utils');
 
 test.describe('Authentication E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,11 +16,10 @@ test.describe('Authentication E2E Tests', () => {
     await expect(page).toHaveURL('/register');
 
     // Fill registration form
-    const { fillAuthFields } = require('./utils');
     await fillAuthFields(page, email, password, password);
     
-    // Submit form
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    // Submit form using data-testid
+    await page.click('[data-testid="register-submit"]');
     
     // Should redirect to login or dashboard
     await page.waitForNavigation();
@@ -33,9 +32,8 @@ test.describe('Authentication E2E Tests', () => {
 
     // First register the user
     await page.goto('/register');
-    const { fillAuthFields: fillAuthFields2 } = require('./utils');
-    await fillAuthFields2(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await fillAuthFields(page, email, password, password);
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation();
 
     // Clear auth to test login
@@ -43,9 +41,8 @@ test.describe('Authentication E2E Tests', () => {
     await page.goto('/login');
 
     // Login with credentials
-    const { fillAuthFields: fillAuthFields3 } = require('./utils');
-    await fillAuthFields3(page, email, password);
-    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
+    await fillAuthFields(page, email, password);
+    await page.click('[data-testid="login-submit"]');
 
     // Should be redirected to dashboard
     await page.waitForNavigation();
@@ -61,9 +58,8 @@ test.describe('Authentication E2E Tests', () => {
     await page.goto('/login');
 
     // Try login with wrong credentials
-    const { fillAuthFields: fillAuthFields4 } = require('./utils');
-    await fillAuthFields4(page, 'nonexistent@example.com', 'WrongPassword123!');
-    await page.click('button:has-text("Login"), button:has-text("Sign in"), button[type="submit"]');
+    await fillAuthFields(page, 'nonexistent@example.com', 'WrongPassword123!');
+    await page.click('[data-testid="login-submit"]');
 
     // Should show error message
     await page.waitForSelector('text=Invalid email or password', { timeout: 5000 });
@@ -78,10 +74,10 @@ test.describe('Authentication E2E Tests', () => {
     await page.goto('/login');
 
     // Try to submit form with empty fields
-    await page.click('button:has-text("Login")');
+    await page.click('[data-testid="login-submit"]');
 
     // Should show validation errors
-    const emailInput = await page.locator('input[data-testid*="username"], input[type="email"]');
+    const emailInput = await page.locator('[data-testid="login-username"]');
     const isInvalid = await emailInput.evaluate(el => el.validity.valid);
     expect(!isInvalid).toBeTruthy();
   });
@@ -92,17 +88,17 @@ test.describe('Authentication E2E Tests', () => {
 
     // Register and login
     await page.goto('/register');
-    const { fillAuthFields: fillAuthFields5 } = require('./utils');
-    await fillAuthFields5(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await fillAuthFields(page, email, password, password);
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation();
 
     // Verify we're logged in
     let token = await getAuthToken(page);
     expect(token).toBeTruthy();
 
-    // Find and click logout button
-    await page.click('button:has-text("Logout"), a:has-text("Logout")');
+    // Open user menu first, then click logout button
+    await page.click('[data-testid="user-menu-button"]');
+    await page.click('[data-testid="logout-button"]');
     await page.waitForNavigation();
 
     // Should be redirected to login or home
@@ -143,9 +139,8 @@ test.describe('Authentication E2E Tests', () => {
 
     // Register and login
     await page.goto('/register');
-    const { fillAuthFields: fillAuthFields6 } = require('./utils');
-    await fillAuthFields6(page, email, password, password);
-    await page.click('button:has-text("Register"), button:has-text("Create account"), button[type="submit"]');
+    await fillAuthFields(page, email, password, password);
+    await page.click('[data-testid="register-submit"]');
     await page.waitForNavigation();
 
     // Get initial token

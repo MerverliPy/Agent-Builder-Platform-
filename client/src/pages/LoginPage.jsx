@@ -98,6 +98,7 @@ export default function LoginPage() {
                   size="lg"
                   loading={loading}
                   disabled={loading}
+                  data-testid="login-submit"
                 >
                   Sign in
                 </Button>

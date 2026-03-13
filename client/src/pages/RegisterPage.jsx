@@ -143,6 +143,7 @@ export default function RegisterPage() {
                   size="lg"
                   loading={loading}
                   disabled={loading}
+                  data-testid="register-submit"
                 >
                   Create account
                 </Button>

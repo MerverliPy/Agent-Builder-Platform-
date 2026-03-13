@@ -45,6 +45,7 @@ export const UserMenu = ({ className }) => {
             onClick={() => setIsOpen(!isOpen)}
             className="flex md:flex items-center gap-2 p-2 rounded-lg hover:bg-neutral-100 transition-colors"
             aria-label="User menu"
+            data-testid="user-menu-button"
           >
             <Avatar
               name={user.username}
@@ -77,6 +78,7 @@ export const UserMenu = ({ className }) => {
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                data-testid="logout-button"
               >
                 Logout
               </button>
