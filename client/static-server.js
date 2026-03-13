@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Minimal static file server (no deps) for serving a CRA build folder.
+// Minimal static file server (no deps) for serving the Vite build folder.
 // Usage: HOST=0.0.0.0 PORT=3000 node static-server.js
 
 const http = require('http')
@@ -8,7 +8,7 @@ const path = require('path')
 
 const HOST = process.env.HOST || process.env.BIND_ADDR || '0.0.0.0'
 const PORT = Number(process.env.PORT || process.env.LISTEN_PORT || 3000)
-const BUILD_DIR = path.resolve(__dirname, 'build')
+const BUILD_DIR = path.resolve(__dirname, 'dist')
 
 const mime = new Map([
   ['.html', 'text/html'],

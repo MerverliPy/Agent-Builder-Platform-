@@ -2,103 +2,81 @@
 
 ## Current Objective
 
-- Make CABP (Custom Agent Builder Platform) a stable, remotely reachable service on the Tailscale IP `100.81.83.98`. Secure the deployment by rotating the JWT secret used in CI and on the host, and enable persistent hosting via systemd so the server and client auto‑start on boot.
+- Complete the Vite migration by pushing the branch and verifying CI, keep the server stable for host deployment, and complete operational tasks (rotate JWT secret, install systemd units on the host).
 
 ## Completed Work
 
-- Project moved into `/home/calvin/Repo1` and pushed to GitHub (`MerverliPy/Agent-Builder-Platform-`).
-- Backend and frontend scaffolds implemented (Express API + React CRA) with auth, RBAC, media uploads, storage adapters, and tests.
-- Dev helpers: `scripts/dev-start.sh` / `scripts/dev-stop.sh` to install deps, build client and start the stack bound to a specified host/IP.
-- Static client server: `client/static-server.js` implemented to reliably bind the built client to a non‑localhost IP.
-- Docker support: `docker-compose.yml`, `server/Dockerfile`, `client/Dockerfile` added (host networking mode available).
-- Systemd templates and installer scaffold created at `/home/calvin/systemd/` and copied into the repo at `/home/calvin/Repo1/systemd/`.
-- Dev stack started (no Docker): server bound to `100.81.83.98:5000`, client served at `100.81.83.98:3000`. Logs in `/tmp/cabp-*.log` and PIDs in `/tmp`.
-- GitHub Actions `JWT_SECRET` repository secret was created during setup (temporary/weak value). SSH key for this host was added to GitHub so pushes succeeded.
+- Repo organized under `/home/calvin/Repo1` with server and client apps and CI workflows.
+- Server: implemented Express API, auth, RBAC, agents CRUD, media uploads, cleanup task, and Jest tests; `server/Dockerfile` switched to Debian base and required libs for `sharp`.
+- Dev tooling: fixed `scripts/dev-start.sh` to correctly handle HOST/PORT and wait-on; `scripts/dev-stop.sh` present.
+- Startup docs: added `startup.txt` (startup instructions) in repo root.
+- Dependency fixes: upgraded `nodemon` to 3.x and updated `server/package-lock.json` (audit now clean on server). Server tests pass locally.
+- Client: created branch `fix/client-audit` with `npm audit fix --force`, restored `react-scripts@5.0.1`, updated `client/package-lock.json`; client unit tests pass locally.
+- CI: added `docker-build.yml` workflow to build images and smoke-test; `JWT_SECRET` Actions secret exists (rotate recommended).
+- **Vite migration: created `migrate/client-to-vite` branch with full Vite scaffold**:
+  - Installed Vite 8.0.0 and @vitejs/plugin-react 6.0.0
+  - Created `client/index.html` and `client/vite.config.js`
+  - Updated `package.json` scripts (start: vite, build: vite build, preview: vite preview)
+  - Renamed all JSX files from `.js` to `.jsx` (15 files: components, pages, contexts)
+  - Updated all build artifact references from `build/` to `dist/` (Dockerfile, CI workflows, dev scripts, static-server.js)
+  - Verified: `npm run build` succeeds (~100ms), `npm test` passes, bundle: 177.62 kB JS (57.21 kB gzipped)
 
 ## Pending Work
 
-- Rotate `JWT_SECRET` to a strong value in GitHub Actions and update the host environment (`/etc/cabp.env`).
-- Run the systemd installer (`/home/calvin/Repo1/systemd/install-systemd.sh`) as root to copy unit files and enable `cabp-server` and `cabp-client` services.
-- Confirm systemd unit `ExecStart` paths are correct for the host's Node installation (unit currently references an nvm path). Update unit if necessary.
-- Verify services are healthy after systemd activation and confirm remote access from a Tailscale peer.
-- Run full test suites (server and client unit tests, Playwright E2E) and address any failures.
+- Push `migrate/client-to-vite` branch to remote and verify CI passes (build, test, Docker image build).
+- Push `fix/client-audit` branch to remote and open PR for review; verify CI (client `npm ci`, tests, build) and merge if green.
+- Rotate `JWT_SECRET` in GitHub Actions and update host `/etc/cabp.env` to the same value.
+- Run `systemd/install-systemd.sh` on the host as root, verify `cabp-server` and `cabp-client` services, and confirm remote access via Tailscale.
+- Harden client build chain or apply targeted `overrides` to avoid forceful fixes in future; consider adding Dependabot.
+- Migrate client tests to Vitest (optional, after Vite migration is merged) and re-run Playwright E2E with artifact capture.
 
 ## Relevant Files
 
-- Repo root: `/home/calvin/Repo1/`
-- Dev scripts: `/home/calvin/Repo1/scripts/dev-start.sh`, `/home/calvin/Repo1/scripts/dev-stop.sh`
-- Server: `/home/calvin/Repo1/server/` (sources in `server/src/`, tests in `server/test/`)
-- Client: `/home/calvin/Repo1/client/` (sources in `client/src/`, `client/static-server.js`, build at `client/build`)
-- Systemd: `/home/calvin/Repo1/systemd/` and `/home/calvin/systemd/` (unit files and `install-systemd.sh`)
-- CI workflows: `/home/calvin/Repo1/.github/workflows/ci.yml`, `/home/calvin/Repo1/.github/workflows/e2e.yml`
-- Logs & runtime: `/tmp/cabp-server.log`, `/tmp/cabp-client.log`, `/tmp/cabp-server.pid`, `/tmp/cabp-client.pid`
+- Repository root: `/home/calvin/Repo1`
+- Dev scripts: `scripts/dev-start.sh`, `scripts/dev-stop.sh`
+- Server: `server/` (sources: `server/src/`, tests: `server/test/`, `server/Dockerfile`)
+- Client: `client/` (sources: `client/src/`, `client/package.json`, `client/vite.config.js`, `client/index.html`)
+- Systemd: `systemd/` (`install-systemd.sh`, unit templates)
+- CI: `.github/workflows/ci.yml`, `.github/workflows/docker-build.yml`, `.github/workflows/e2e.yml`
+- Docs: `startup.txt`, `SESSION_HANDOFF.md`, `TODO.md`, `client/vite-migration-plan.md`
 
 ## Commands to Run
 
-- Start dev stack (no Docker) bound to Tailscale IP:
-```
-cd /home/calvin/Repo1
-export JWT_SECRET="<strong-secret>"
-./scripts/dev-start.sh 100.81.83.98
-```
-- Stop dev stack:
-```
-./scripts/dev-stop.sh
-```
-- Build and serve client manually:
-```
-cd /home/calvin/Repo1/client
-npm install --legacy-peer-deps
-npm run build
-HOST=100.81.83.98 PORT=3000 node static-server.js
-```
-- Systemd activation (must run as root):
-```
-sudo tee /etc/cabp.env > /dev/null <<EOF
-JWT_SECRET=<the-generated-secret>
-HOST=0.0.0.0
-PORT=3000
-EOF
-sudo chmod 600 /etc/cabp.env
-sudo bash /home/calvin/Repo1/systemd/install-systemd.sh
-sudo systemctl daemon-reload
-sudo systemctl restart cabp-server.service cabp-client.service
-sudo systemctl status cabp-server.service --no-pager
-sudo systemctl status cabp-client.service --no-pager
-```
+- Push Vite migration branch and verify CI:
+  - git checkout migrate/client-to-vite
+  - git add -A
+  - git commit -m "feat(client): migrate from CRA to Vite, update build artifacts to dist/"
+  - git push -u origin migrate/client-to-vite
+  - Verify CI passes (GitHub Actions): build, test, Docker image build
+  - If CI green, consider opening PR or merging to main
+
+- Push audit branch and create PR:
+  - git checkout fix/client-audit
+  - git push -u origin fix/client-audit
+  - gh pr create --title "chore(client): audit fix --force and restore react-scripts" --body "Applied npm audit fix --force in client/, restored react-scripts@5.0.1, updated client/package-lock.json. Verified unit tests locally (npm test)."
+
+- Systemd install on host (must run as root):
+  - sudo tee /etc/cabp.env > /dev/null <<EOF
+  - JWT_SECRET=<NEW_SECRET>
+  - HOST=0.0.0.0
+  - PORT=3000
+  - EOF
+  - sudo chmod 600 /etc/cabp.env
+  - sudo bash /home/calvin/Repo1/systemd/install-systemd.sh
+  - sudo systemctl daemon-reload
+  - sudo systemctl restart cabp-server.service cabp-client.service
+  - sudo systemctl status cabp-server.service --no-pager
 
 ## Known Issues
 
-- The GitHub Actions `JWT_SECRET` that was set is weak — rotate immediately. CI and host env must match new secret.
-- Systemd installer requires sudo; I cannot run it in this environment. The installer copies units into `/etc/systemd/system` and enables services.
-- The server unit currently references an absolute nvm node path. If Node is installed elsewhere on the host, update the unit's `ExecStart` to the correct node binary or run services under the appropriate user environment.
-- The original `serve` tool had issues binding to non‑localhost addresses; `client/static-server.js` replaces it for reliable binding.
-- Some npm dependency warnings and audit issues surfaced during installs; consider `npm audit fix` and dependency maintenance.
+- `npm audit fix --force` was used in `client/` on the `fix/client-audit` branch to reduce reported vulnerabilities; this is forceful and must be reviewed in the PR (we restored `react-scripts@5.0.1` locally).
+- CI requires the updated `client/package-lock.json` to be pushed (`npm ci` on runner). Both `fix/client-audit` and `migrate/client-to-vite` branches contain updated lockfiles.
+- Vite migration is complete but not yet pushed or tested in CI; local build and tests verified.
+- Client build output changed from `build/` to `dist/`; all references updated (Dockerfile, CI workflows, dev scripts).
+- Tests still use `react-scripts test` (Jest); migration to Vitest is optional future work.
+- Systemd installer and service enablement require sudo on the host — cannot be executed from this environment.
+- Docker Compose uses `network_mode: host` (Linux-only); adjust compose if running on non-Linux runners or hosts.
 
 ## Exact Next Step
 
-- Rotate the JWT secret and update GitHub Actions and the host env, then run the systemd installer on the host. Concrete immediate action to execute:
-
-On your host shell (copy/paste):
-```
-# generate a strong secret
-export NEW_SECRET=$(openssl rand -hex 32)
-
-# update GitHub Actions secret (web UI recommended) or use gh locally:
-# echo "$NEW_SECRET" | gh secret set JWT_SECRET --repo MerverliPy/Agent-Builder-Platform- --body -
-
-# update host env and enable services (requires sudo):
-sudo tee /etc/cabp.env > /dev/null <<EOF
-JWT_SECRET=$NEW_SECRET
-HOST=0.0.0.0
-PORT=3000
-EOF
-sudo chmod 600 /etc/cabp.env
-sudo bash /home/calvin/Repo1/systemd/install-systemd.sh
-sudo systemctl daemon-reload
-sudo systemctl restart cabp-server.service cabp-client.service
-sudo systemctl status cabp-server.service --no-pager
-sudo systemctl status cabp-client.service --no-pager
-```
-
-I cannot run the sudo steps here; run the block above locally and paste back any `systemctl status` or journal output if services fail — I will troubleshoot and fix unit or environment issues.
+- Commit and push the `migrate/client-to-vite` branch to remote, then verify CI passes (client build, tests, Docker image build, E2E workflow). Execute the "Push Vite migration branch and verify CI" commands above.

@@ -9,6 +9,6 @@ FROM node:18-alpine
 WORKDIR /app
 # Install the 'serve' static server globally. Use 'npm install -g' (not 'npm ci -g').
 RUN npm install -g serve
-COPY --from=build /app/build ./build
+COPY --from=build /app/dist ./dist
 EXPOSE 3000
-CMD ["serve","-s","build","-l","3000"]
+CMD ["serve","-s","dist","-l","3000"]
