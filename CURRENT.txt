@@ -1,0 +1,320 @@
+================================================================================
+CUSTOM AGENT BUILDER PLATFORM (CABP) - CURRENT CAPABILITIES
+================================================================================
+
+Last Updated: March 13, 2026
+Status: PRODUCTION - Fully operational on host via systemd + Tailscale
+
+================================================================================
+WHAT THIS PROJECT DOES
+================================================================================
+
+The Custom Agent Builder Platform is a full-stack web application that allows 
+users to create, manage, and organize lightweight "agents" - configurable 
+entities with names, avatars, skills, response styles, and roles.
+
+Think of it as a management system for AI agents or personas, where you can:
+- Define agent characteristics (name, avatar image, skills, response style)
+- Assign roles to agents for organization
+- Browse and search through your agent collection
+- Control access via user authentication and role-based permissions
+
+================================================================================
+CORE FEATURES
+================================================================================
+
+1. AGENT MANAGEMENT
+   - Create agents with custom properties:
+     * Name (required)
+     * Avatar image (upload from your device)
+     * Skills (comma-separated list, e.g., "coding, debugging, testing")
+     * Response style (free-text description)
+     * Roles (comma-separated tags for organization)
+   
+   - View all agents in a visual grid layout
+   - View detailed information for individual agents
+   - Edit existing agents (requires editor or admin role)
+   - Delete agents (requires admin role)
+
+2. USER AUTHENTICATION & AUTHORIZATION
+   - User registration (development endpoint)
+   - Secure login with JWT tokens
+   - Role-based access control (RBAC):
+     * Viewers: Can browse and view agents
+     * Editors: Can create and update agents
+     * Admins: Full control including delete operations
+   
+   - Account management:
+     * View your user profile and assigned roles
+     * Change your password
+
+3. MEDIA UPLOADS
+   - Upload avatar images for agents (JPEG, PNG, SVG, WebP, GIF)
+   - Automatic image optimization:
+     * Resizes to max 512px width
+     * Converts to WebP format for efficient storage
+     * 5MB file size limit per upload
+   - Images stored on server and served via static URLs
+
+4. API & HEALTH MONITORING
+   - RESTful API endpoints at /api/*
+   - Health check endpoint for monitoring system status
+   - Backend status visible on homepage
+
+================================================================================
+HOW TO USE THE WEBSITE UI
+================================================================================
+
+ACCESS POINTS
+-------------
+- Client UI:  http://100.81.83.98:3000
+- Server API: http://100.81.83.98:5000/api/
+
+NAVIGATION & WORKFLOW
+---------------------
+
+1. HOMEPAGE (/)
+   - Shows the platform name and backend API status
+   - Click "Go to Agents" to browse the agent collection
+
+2. AGENTS LIST PAGE (/agents)
+   - Displays all agents in a grid of cards
+   - Each card shows: agent name, avatar (if set), skills, and roles
+   - Actions available:
+     * Click any agent card to view full details
+     * If logged in with editor/admin role: "Create new agent" button appears
+     * If not logged in: "Sign in to create" button redirects to login
+
+3. SIGN IN (/login)
+   - Enter your username and password
+   - Click "Sign in" to authenticate
+   - On success, redirects to /agents with create/edit permissions
+
+4. CREATE AGENT (/agents/new)
+   - Requires: Must be logged in as editor or admin
+   - Fill out the form:
+     a. Name: Enter a descriptive name (required)
+     b. Avatar: Click to upload an image from your device
+     c. Skills: Enter comma-separated skills (e.g., "Python, React, Docker")
+     d. Response Style: Describe how this agent should respond
+     e. Roles: Add organizational tags (e.g., "developer, backend")
+   - Click "Create" to save
+   - Redirects to the new agent's detail page
+
+5. AGENT DETAIL PAGE (/agents/:id)
+   - Shows full information for a specific agent:
+     * Avatar image (if uploaded)
+     * Name
+     * Skills list
+     * Response style
+     * Assigned roles
+   - Actions (if logged in):
+     * "Edit" button (for editors/admins) - go to edit page
+     * "Delete" button (for admins only) - removes agent permanently
+   - "Back to agents" link returns to the list
+
+6. EDIT AGENT (/agents/:id/edit)
+   - Requires: Must be logged in as editor or admin
+   - Same form as create, pre-filled with current values
+   - Modify any fields you want to update
+   - Click "Save" to persist changes
+   - Redirects back to the agent detail page
+
+7. ACCOUNT PAGE (/account)
+   - Requires: Must be logged in
+   - Shows your user information:
+     * Username
+     * Assigned roles
+   - Change password form:
+     * Enter current password
+     * Enter new password
+     * Click "Change password" to update
+
+================================================================================
+API ENDPOINTS (for developers)
+================================================================================
+
+AUTHENTICATION
+--------------
+POST   /api/auth/login          - Login (returns JWT token)
+POST   /api/auth/register       - Register new user (dev only)
+GET    /api/auth/me             - Get current user info (requires auth)
+POST   /api/auth/change-password - Change password (requires auth)
+
+AGENTS
+------
+GET    /api/agents              - List all agents (public)
+POST   /api/agents              - Create agent (requires editor/admin)
+GET    /api/agents/:id          - Get single agent (public)
+PUT    /api/agents/:id          - Update agent (requires editor/admin)
+DELETE /api/agents/:id          - Delete agent (requires admin)
+
+MEDIA
+-----
+POST   /api/media/upload        - Upload image file (multipart/form-data)
+                                  Returns: { url: "/uploads/filename.webp" }
+
+HEALTH
+------
+GET    /api/health              - System health check
+
+================================================================================
+PERMISSIONS MATRIX
+================================================================================
+
+Action                  | Public | Editor | Admin
+------------------------|--------|--------|-------
+View agents list        |   ✓    |   ✓    |   ✓
+View agent details      |   ✓    |   ✓    |   ✓
+Create agent            |   ✗    |   ✓    |   ✓
+Edit agent              |   ✗    |   ✓    |   ✓
+Delete agent            |   ✗    |   ✗    |   ✓
+Upload media            |   ✓    |   ✓    |   ✓
+View own account        |   ✗    |   ✓    |   ✓
+Change password         |   ✗    |   ✓    |   ✓
+
+================================================================================
+TECHNICAL STACK
+================================================================================
+
+BACKEND
+- Node.js 20.x with Express framework
+- JWT authentication with bcrypt password hashing
+- File-based storage adapter (JSON persistence)
+- Multer for multipart file uploads
+- Sharp for image processing and optimization
+- Port: 5000
+
+FRONTEND
+- React 18 single-page application
+- Vite 8.0.0 build tooling
+- React Router for client-side routing
+- localStorage for JWT token persistence
+- Port: 3000
+
+DEPLOYMENT
+- Systemd services on Linux host
+- Tailscale for secure remote access
+- Logs: /var/log/cabp-server.log, /var/log/cabp-client.log
+
+================================================================================
+SAMPLE WORKFLOW: CREATING YOUR FIRST AGENT
+================================================================================
+
+1. Open browser to http://100.81.83.98:3000
+2. Click "Go to Agents" on homepage
+3. Click "Sign in to create" (if not logged in)
+4. Enter your credentials and sign in
+5. Click "Create new agent" button
+6. Fill out the form:
+   - Name: "Python Code Assistant"
+   - Avatar: Upload a Python logo image
+   - Skills: "Python, debugging, code review, testing"
+   - Response Style: "Helpful and concise with code examples"
+   - Roles: "developer, backend"
+7. Click "Create"
+8. You'll see your new agent's detail page
+9. Click "Back to agents" to see it in the grid with others
+
+To edit later:
+1. Click the agent card from the list
+2. Click "Edit" button
+3. Modify any fields
+4. Click "Save"
+
+================================================================================
+DATA PERSISTENCE
+================================================================================
+
+- Agents: Stored in server/data/agents.json (file-based storage)
+- Users: Stored in server/data/users.json
+- Uploads: Stored in server/uploads/ directory as WebP images
+- Authentication: JWT tokens stored in browser localStorage
+
+Note: Current implementation uses file-based storage. For production scaling,
+consider migrating to PostgreSQL and S3/object storage for media.
+
+================================================================================
+DEVELOPMENT & OPERATIONS
+================================================================================
+
+SERVICE MANAGEMENT
+------------------
+Check status:    sudo systemctl status cabp-server.service cabp-client.service
+Restart:         sudo systemctl restart cabp-server.service cabp-client.service
+View logs:       sudo tail -f /var/log/cabp-server.log
+                 sudo tail -f /var/log/cabp-client.log
+
+DEVELOPMENT MODE (local)
+------------------------
+Start dev:       ./scripts/dev-start.sh
+Stop dev:        ./scripts/dev-stop.sh
+
+TESTING
+-------
+Server tests:    cd server && npm test
+Client tests:    cd client && npm test
+E2E tests:       npm run test:e2e (from root)
+
+BUILD
+-----
+Server Docker:   docker build -f server/Dockerfile -t cabp-server .
+Client Docker:   docker build -f client/Dockerfile -t cabp-client .
+Client bundle:   cd client && npm run build
+
+================================================================================
+SECURITY NOTES
+================================================================================
+
+- JWT_SECRET: Rotated on 2026-03-13 to secure 32-byte base64 value
+- Passwords: Hashed with bcrypt before storage
+- File uploads: Limited to 5MB, image types only (JPEG, PNG, SVG, WebP, GIF)
+- Auth middleware: Protects all mutation endpoints
+- RBAC: Server-side role checks enforce permissions
+
+For public deployment:
+- Add HTTPS with TLS certificates
+- Configure nginx reverse proxy
+- Enable CORS policies
+- Add rate limiting
+- Implement refresh token strategy
+
+================================================================================
+KNOWN LIMITATIONS
+================================================================================
+
+- Single-host deployment (not horizontally scalable yet)
+- File-based storage (not suitable for high concurrency)
+- No pagination on agent list (will slow with 1000+ agents)
+- No search/filter functionality yet
+- Upload cleanup runs manually (not automated via cron/systemd timer)
+- Dev dependencies have 26 vulnerabilities (from react-scripts, not in prod)
+
+================================================================================
+NEXT STEPS & IMPROVEMENTS
+================================================================================
+
+Optional enhancements available:
+- Migrate client tests to Vitest for full Vite stack
+- Add Playwright E2E with artifact capture
+- Auto-detect nvm node paths in systemd installer
+- Add search and filter to agent list
+- Implement pagination for large agent collections
+- Add nginx reverse proxy with TLS for public access
+- Migrate to PostgreSQL database
+- Move uploads to S3 with signed URLs
+- Add Prometheus/Grafana monitoring
+
+================================================================================
+SUPPORT & DOCUMENTATION
+================================================================================
+
+Repository: /home/calvin/Repo1
+Architecture: See ARCHITECTURE.md
+Session Notes: See SESSION_HANDOFF.md
+Roadmap: See TODO.md
+
+For issues or questions, refer to the documentation files above or check
+the codebase README files in server/ and client/ directories.
+
+================================================================================
