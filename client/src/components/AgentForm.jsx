@@ -151,6 +151,7 @@ export default function AgentForm({
               >
                 <Input
                   id="agent-name"
+                  data-testid="agent-name"
                   label="Name"
                   value={name}
                   onChange={e => handleNameChange(e.target.value)}
@@ -320,6 +321,7 @@ export default function AgentForm({
             </Button>
             <Button
               type="submit"
+              data-testid="agentform-submit"
               loading={submitting}
               disabled={submitting}
             >

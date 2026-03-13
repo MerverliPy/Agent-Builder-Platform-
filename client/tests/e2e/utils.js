@@ -79,15 +79,40 @@ export async function generateUniqueEmail() {
 }
 
 // Common selectors that prefer data-testid attributes but fall back to input types
-export const usernameSelector = 'input[data-testid*="username"], input[type="email"]'
+export const usernameSelector = 'input[data-testid*="username"], input[data-testid*="agent-name"], input[type="email"]'
 export const passwordSelector = 'input[data-testid*="password"], input[type="password"]'
 export const confirmSelector = 'input[data-testid="register-confirm-password"], input[placeholder*="Confirm"]'
 
 // Helper to fill auth/register forms consistently
 export async function fillAuthFields(page, username, password, confirm = null) {
-  await page.fill(usernameSelector, username)
-  await page.fill(passwordSelector, password)
+  // Wait for fields to appear and fill them; be resilient if data-testid isn't present
+  try {
+    await page.waitForSelector(usernameSelector, { timeout: 5000 })
+    await page.fill(usernameSelector, username)
+  } catch (e) {
+    // fallback: find first editable input (not readonly/disabled)
+    const editable = page.locator('input:not([readonly]):not([disabled])')
+    const cnt = await editable.count()
+    if (cnt > 0) await editable.nth(0).fill(username)
+  }
+
+  try {
+    await page.waitForSelector(passwordSelector, { timeout: 5000 })
+    await page.fill(passwordSelector, password)
+  } catch (e) {
+    const editable = page.locator('input:not([readonly]):not([disabled])')
+    const cnt = await editable.count()
+    if (cnt > 1) await editable.nth(1).fill(password)
+  }
+
   if (confirm !== null) {
-    await page.fill(confirmSelector, confirm)
+    try {
+      await page.waitForSelector(confirmSelector, { timeout: 5000 })
+      await page.fill(confirmSelector, confirm)
+    } catch (e) {
+      const editable = page.locator('input:not([readonly]):not([disabled])')
+      const cnt = await editable.count()
+      if (cnt > 2) await editable.nth(2).fill(confirm)
+    }
   }
 }

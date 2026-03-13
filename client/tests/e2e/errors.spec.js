@@ -32,9 +32,9 @@ test.describe('Error Handling E2E Tests', () => {
       // Should show validation error or stay on form
       await page.waitForTimeout(1000);
       
-      // Check for error message or form still visible
-      const errorVisible = await page.isVisible('text=Required, text=Please enter, text=Name is required');
-      const formVisible = await page.isVisible('input[placeholder*="name" i]');
+    // Check for error message or form still visible
+    const errorVisible = await page.isVisible('text=Required, text=Please enter, text=Name is required');
+    const formVisible = await page.isVisible('input[data-testid="agent-name"], input[placeholder*="name" i]');
       
       expect(errorVisible || formVisible).toBeTruthy();
     }
@@ -198,7 +198,7 @@ test.describe('Error Handling E2E Tests', () => {
     await page.goto('/agents/new');
 
     // Start typing name
-    const nameInput = await page.$('input[placeholder*="name" i], input[name="name"]');
+    const nameInput = await page.$('input[data-testid="agent-name"], input[placeholder*="name" i], input[name="name"]');
     if (nameInput) {
       await nameInput.type('A');
       

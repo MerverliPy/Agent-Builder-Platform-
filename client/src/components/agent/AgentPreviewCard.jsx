@@ -57,15 +57,15 @@ export default function AgentPreviewCard({
 
             {/* Agent Name */}
             <div className="text-center mb-4">
-              <motion.h3
-                key={`name-${name}`}
-                variants={contentVariants}
-                initial="initial"
-                animate="animate"
-                className="text-2xl font-bold text-gray-900"
-              >
-                {name || 'Agent Name'}
-              </motion.h3>
+               <motion.h3
+                 key={`name-${name}`}
+                 variants={contentVariants}
+                 initial="initial"
+                 animate="animate"
+                 className="text-2xl font-bold text-gray-900"
+               >
+                 <span data-testid="agent-preview-name">{name || 'Agent Name'}</span>
+               </motion.h3>
               {roles && roles.length > 0 && (
                 <motion.p
                   key={`roles-${roles.join(',')}`}

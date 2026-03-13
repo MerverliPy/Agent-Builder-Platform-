@@ -41,7 +41,7 @@ test.describe('Agent CRUD E2E Tests', () => {
 
     // Fill agent form
     const agentName = `Test Agent ${Date.now()}`;
-    await page.fill('input[name="name"], input[placeholder*="name" i], input[data-testid*="name"]', agentName);
+    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
     await page.fill('textarea[name="description"], textarea[placeholder*="description" i]', 'This is a test agent');
     await page.fill('input[name="role"], input[placeholder*="role" i]', 'Assistant');
     
@@ -67,7 +67,7 @@ test.describe('Agent CRUD E2E Tests', () => {
 
     // Fill only required fields
     const agentName = `Minimal Agent ${Date.now()}`;
-    await page.fill('input[name="name"], input[placeholder*="name" i], input[data-testid*="name"]', agentName);
+    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
 
     // Submit form
     await page.click('button:has-text("Create"), button:has-text("Save")');
@@ -107,7 +107,7 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.click('button:has-text("Create"), a:has-text("Create")');
     await page.waitForNavigation();
     
-    await page.fill('input[name="name"], input[placeholder*="name" i], input[data-testid*="name"]', agentName);
+    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
     await page.click('button:has-text("Create"), button:has-text("Save")');
     await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
 
@@ -122,9 +122,9 @@ test.describe('Agent CRUD E2E Tests', () => {
 
     // Update agent info
     const updatedName = `${agentName} Updated`;
-    const nameInput = await page.$('input[name="name"], input[placeholder*="name" i], input[data-testid*="name"]');
+    const nameInput = await page.$('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]');
     if (nameInput) {
-      await page.fill('input[name="name"], input[placeholder*="name" i], input[data-testid*="name"]', updatedName);
+      await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', updatedName);
       await page.fill('textarea[name="description"], textarea[placeholder*="description" i]', 'Updated description');
 
       // Save changes
@@ -192,15 +192,13 @@ test.describe('Agent CRUD E2E Tests', () => {
     await page.goto('/agents/new');
 
     const agentName = `Preview Test ${Date.now()}`;
-    await page.fill('input[name="name"], input[placeholder*="name" i]', agentName);
+    await page.fill('input[data-testid="agent-name"], input[name="name"], input[placeholder*="name" i]', agentName);
 
     // Check if preview is visible
-    const preview = await page.$('[data-testid*="preview"], .preview, [class*="preview"]');
-    if (preview) {
-      expect(await preview.isVisible()).toBeTruthy();
-
-      // Verify preview updates as we type
-      const previewText = await preview.textContent();
+    const previewName = await page.$('[data-testid="agent-preview-name"]');
+    if (previewName) {
+      expect(await previewName.isVisible()).toBeTruthy();
+      const previewText = await previewName.textContent();
       expect(previewText).toContain(agentName);
     }
   });

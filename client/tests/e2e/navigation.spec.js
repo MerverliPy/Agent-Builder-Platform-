@@ -99,7 +99,7 @@ test.describe('Navigation and Routing E2E Tests', () => {
     expect(page.url()).toContain('/agents/new');
 
     // Form should be visible
-    expect(await page.isVisible('input[placeholder*="name" i], input[name="name"]')).toBeTruthy();
+    expect(await page.isVisible('input[data-testid="agent-name"], input[placeholder*="name" i], input[name="name"]')).toBeTruthy();
   });
 
   test('should handle SPA navigation without page reloads', async ({ page }) => {
