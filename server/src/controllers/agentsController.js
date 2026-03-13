@@ -14,7 +14,9 @@ async function create(req, res, next) {
 async function getAll(req, res, next) {
   try {
     const list = await storage.getAll()
-    res.json(list)
+    // Filter to only agents (exclude users and other types)
+    const agents = list.filter(item => item.id && item.id.startsWith('ag_'))
+    res.json(agents)
   } catch (err) { next(err) }
 }
 
