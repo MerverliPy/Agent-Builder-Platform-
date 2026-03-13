@@ -9,16 +9,27 @@ fi
 WORKDIR="/home/calvin/Repo1"
 ENV_FILE="/etc/cabp.env"
 
-echo "Creating /etc/cabp.env (you should edit it to set JWT_SECRET)"
-cat > "$ENV_FILE" <<'EOF'
+echo "=== CABP Systemd Installation ==="
+echo ""
+
+# Check if /etc/cabp.env exists
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Creating /etc/cabp.env (you should edit it to set JWT_SECRET)"
+  cat > "$ENV_FILE" <<'EOF'
 # CABP environment
 JWT_SECRET=replace-with-strong-secret
-HOST=0.0.0.0
+HOST=100.81.83.98
 PORT=3000
+NODE_ENV=production
 EOF
-chmod 600 "$ENV_FILE"
+  chmod 600 "$ENV_FILE"
+  echo "✓ Created $ENV_FILE"
+else
+  echo "✓ $ENV_FILE already exists (keeping existing config)"
+fi
 
-echo "Copying systemd unit files"
+echo ""
+echo "Copying systemd unit files..."
 SERVER_UNIT="/etc/systemd/system/cabp-server.service"
 CLIENT_UNIT="/etc/systemd/system/cabp-client.service"
 
@@ -43,7 +54,7 @@ if [ -n "$USER_NODE" ]; then
       echo "Node is in a system location; leaving unit ExecStart to use /usr/bin/env node"
       ;;
     *)
-      echo "Pinning ExecStart to "$USER_NODE" in unit files to ensure systemd can find node"
+      echo "Pinning ExecStart to $USER_NODE in unit files to ensure systemd can find node"
       sed -i "s|/usr/bin/env node|$USER_NODE|g" "$SERVER_UNIT" "$CLIENT_UNIT" || true
       ;;
   esac
@@ -52,16 +63,53 @@ else
   echo "If you use nvm, ensure the node path is added to the unit or install node globally."
 fi
 
-echo "Reloading systemd"
+echo ""
+echo "Stopping any running processes on ports 3000 and 5000..."
+# Kill any existing processes
+pkill -f "serve -s" || true
+pkill -f "static-server.js" || true
+# Wait a moment for processes to stop
+sleep 2
+
+echo ""
+echo "Reloading systemd daemon..."
 systemctl daemon-reload
 
-echo "Enabling and starting services"
-systemctl enable --now cabp-server.service || true
-systemctl enable --now cabp-client.service || true
+echo ""
+echo "Stopping any existing services..."
+systemctl stop cabp-server.service 2>/dev/null || true
+systemctl stop cabp-client.service 2>/dev/null || true
 
-echo "Status (server):"
-systemctl status cabp-server.service --no-pager
-echo "Status (client):"
-systemctl status cabp-client.service --no-pager
+echo ""
+echo "Enabling and starting services..."
+systemctl enable cabp-server.service
+systemctl enable cabp-client.service
+systemctl start cabp-server.service
+systemctl start cabp-client.service
 
-echo "Logs: /var/log/cabp-server.log and /var/log/cabp-client.log"
+echo ""
+echo "=== Service Status ==="
+echo ""
+echo "--- Backend Server ---"
+systemctl status cabp-server.service --no-pager || true
+echo ""
+echo "--- Frontend Client ---"
+systemctl status cabp-client.service --no-pager || true
+
+echo ""
+echo "=== Installation Complete ==="
+echo ""
+echo "Logs available at:"
+echo "  - Backend:  /var/log/cabp-server.log"
+echo "  - Frontend: /var/log/cabp-client.log"
+echo ""
+echo "Service commands:"
+echo "  sudo systemctl status cabp-server"
+echo "  sudo systemctl status cabp-client"
+echo "  sudo systemctl restart cabp-server"
+echo "  sudo systemctl restart cabp-client"
+echo "  sudo journalctl -u cabp-server -f"
+echo "  sudo journalctl -u cabp-client -f"
+echo ""
+echo "Frontend: http://100.81.83.98:3000"
+echo "Backend:  http://localhost:5000"

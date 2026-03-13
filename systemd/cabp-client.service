@@ -1,12 +1,14 @@
 [Unit]
-Description=CABP Static Client Server (Node)
+Description=CABP Static Client Server (Frontend)
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/home/calvin/Repo1/client
-EnvironmentFile=/etc/cabp.env
+EnvironmentFile=-/etc/cabp.env
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=HOST=100.81.83.98
+Environment=PORT=3000
 ExecStart=/usr/bin/env node static-server.js
 Restart=always
 RestartSec=5
