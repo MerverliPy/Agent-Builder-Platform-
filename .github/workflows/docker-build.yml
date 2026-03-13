@@ -28,7 +28,7 @@ jobs:
       - name: Start server container
         run: |
           echo "Starting server container..."
-          docker run -d --rm -p 5000:5000 -e JWT_SECRET="$JWT_SECRET" --name cabp-server-ci cabp-server:ci
+          docker run -d --rm -p 5000:5000 -e JWT_SECRET="$JWT_SECRET" -e HOST=0.0.0.0 --name cabp-server-ci cabp-server:ci
 
       - name: Wait for server health
         run: |
