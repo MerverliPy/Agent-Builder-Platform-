@@ -24,46 +24,44 @@ export default function AgentForm({
     return e
   }
 
-  // Notify parent of form changes for live preview
-  function notifyChange() {
-    if (onFormChange) {
-      onFormChange({
-        name: name.trim(),
-        avatar: avatar || null,
-        skills: skills.split(',').map(s=>s.trim()).filter(Boolean),
-        responseStyle: responseStyle.trim(),
-        roles: roles.split(',').map(s=>s.trim()).filter(Boolean),
-      })
-    }
-  }
-
+  // Notify parent of form changes for live preview (synchronously)
   const handleNameChange = (val) => {
     setName(val)
-    setTimeout(() => onFormChange && onFormChange({ name: val }), 0)
+    if (onFormChange) {
+      onFormChange({ name: val })
+    }
   }
 
   const handleAvatarChange = (val) => {
     setAvatar(val)
-    setTimeout(() => onFormChange && onFormChange({ avatar: val }), 0)
+    if (onFormChange) {
+      onFormChange({ avatar: val })
+    }
   }
 
   const handleSkillsChange = (val) => {
     setSkills(val)
-    setTimeout(() => onFormChange && onFormChange({ 
-      skills: val.split(',').map(s=>s.trim()).filter(Boolean)
-    }), 0)
+    if (onFormChange) {
+      onFormChange({ 
+        skills: val.split(',').map(s=>s.trim()).filter(Boolean)
+      })
+    }
   }
 
   const handleRolesChange = (val) => {
     setRoles(val)
-    setTimeout(() => onFormChange && onFormChange({ 
-      roles: val.split(',').map(s=>s.trim()).filter(Boolean)
-    }), 0)
+    if (onFormChange) {
+      onFormChange({ 
+        roles: val.split(',').map(s=>s.trim()).filter(Boolean)
+      })
+    }
   }
 
   const handleResponseStyleChange = (val) => {
     setResponseStyle(val)
-    setTimeout(() => onFormChange && onFormChange({ responseStyle: val }), 0)
+    if (onFormChange) {
+      onFormChange({ responseStyle: val })
+    }
   }
 
   async function handleSubmit(ev) {
