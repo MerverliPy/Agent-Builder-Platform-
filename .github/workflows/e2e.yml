@@ -32,11 +32,11 @@ jobs:
       - name: Wait for server
         run: npx wait-on http://localhost:5000 --timeout 30000
 
-      - name: Setup Playwright (browsers)
-        uses: microsoft/playwright-github-action@v1
-        with:
-          install-deps: true
-          browsers: all
+      - name: Install Playwright browsers and system dependencies
+        # Use the playwright CLI to install browsers and dependencies directly.
+        # The microsoft/playwright-github-action@v1 has deprecated inputs and sometimes
+        # fails on newer Ubuntu images. Installing via CLI is more stable and explicit.
+        run: npx playwright install --with-deps
 
       - name: Install client deps
         working-directory: client
