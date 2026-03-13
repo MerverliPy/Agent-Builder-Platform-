@@ -25,10 +25,14 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
   - Fixed `docker-build.yml`: added HOST=0.0.0.0 for server container
   - Both server and client images build successfully
   - Smoke tests pass: server health check and client serving verified
+- **✅ Evaluated and removed fix/client-audit branch**:
+  - Confirmed react-scripts vulnerabilities (26 total) only affect dev dependencies
+  - Production builds use Vite and don't include react-scripts
+  - Moved react-scripts to devDependencies (only used for testing)
+  - Deleted obsolete fix/client-audit branch locally and remotely
 
 ## Pending Work
 
-- Evaluate `fix/client-audit` branch (may be obsolete post-Vite).
 - Rotate `JWT_SECRET` in GitHub Actions and update host `/etc/cabp.env`.
 - Install systemd units on host, verify `cabp-server` and `cabp-client` services.
 - Verify remote access via Tailscale.
@@ -45,12 +49,6 @@ Complete operational tasks for production deployment: rotate JWT secret and inst
 - Docs: `startup.txt`, `SESSION_HANDOFF.md`, `TODO.md`, `client/vite-migration-plan.md`
 
 ## Commands to Run
-
-Evaluate fix/client-audit branch:
-```
-git checkout fix/client-audit
-npm audit
-```
 
 Rotate JWT secret:
 ```
@@ -73,13 +71,13 @@ sudo systemctl status cabp-server.service --no-pager
 
 ## Known Issues
 
-- `fix/client-audit` branch may be obsolete (Vite eliminates CRA vulnerabilities).
 - Client build output: `build/` → `dist/` (all references updated).
 - Tests use `react-scripts test` (Jest); Vitest migration optional.
+- Dev dependencies have 26 vulnerabilities from react-scripts (dev only, not in production).
 - CI requires Node.js 20.x (Vite 8 requirement).
 - Systemd install requires sudo on host.
 - Docker Compose uses `network_mode: host` (Linux-only).
 
 ## Exact Next Step
 
-Evaluate `fix/client-audit` branch to determine if it's still needed: `git checkout fix/client-audit && npm audit`
+Rotate JWT_SECRET in GitHub Actions: `gh secret set JWT_SECRET`

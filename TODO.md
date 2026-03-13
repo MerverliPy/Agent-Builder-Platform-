@@ -1,7 +1,6 @@
 # Project TODO
 
 ## High Priority
-- Evaluate `fix/client-audit` branch relevance (may be obsolete post-Vite migration).
 - Rotate `JWT_SECRET` to a strong value and update GitHub Actions secret.
 - Run systemd installer on host and verify `cabp-server` and `cabp-client` services start on boot.
 - Ensure systemd units point to correct Node binary/environment for the host.
@@ -42,3 +41,6 @@
 - Fixed client Dockerfile: upgraded to Node.js 20 for Vite 8 compatibility.
 - Fixed docker-build.yml: added HOST=0.0.0.0 for server container.
 - Verified Docker Build workflow passes (run #23034876087): both images build, smoke tests pass.
+- Evaluated fix/client-audit branch: confirmed obsolete (vulnerabilities only in dev deps).
+- Moved react-scripts to devDependencies (production builds use Vite only).
+- Deleted fix/client-audit branch locally and remotely.
