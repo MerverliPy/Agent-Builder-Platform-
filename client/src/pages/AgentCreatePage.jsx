@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import api from '../api/api'
 import AgentForm from '../components/AgentForm'
@@ -7,6 +8,10 @@ import { fadeIn, slideUp } from '../lib/animations'
 
 export default function AgentCreatePage() {
   const [error, setError] = useState(null)
+  const location = useLocation()
+  
+  // Get template data from location state if navigating from templates page
+  const templateData = location.state?.template || null
 
   async function handleCreate(payload) {
     try {
@@ -31,6 +36,11 @@ export default function AgentCreatePage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Agent</h1>
             <p className="text-gray-600">Configure your new AI agent with custom settings</p>
+            {templateData && (
+              <p className="text-sm text-primary-600 mt-2">
+                Starting from <strong>{templateData.name}</strong> template
+              </p>
+            )}
           </div>
 
           {/* Error Message */}
@@ -46,7 +56,11 @@ export default function AgentCreatePage() {
           )}
 
           {/* Form */}
-          <AgentForm onSubmit={handleCreate} submitLabel="Create Agent" />
+          <AgentForm 
+            initial={templateData} 
+            onSubmit={handleCreate} 
+            submitLabel="Create Agent" 
+          />
         </motion.div>
       </Container>
     </Section>

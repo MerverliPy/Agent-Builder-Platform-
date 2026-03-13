@@ -74,6 +74,7 @@ Custom Agent Builder Platform (CABP) is a minimal full‑stack application that 
 - Performance optimization: Tailwind purges unused CSS, Vite tree-shakes JS, Framer Motion uses GPU-accelerated transforms.
 - Atomic design pattern: components organized from primitives (Button, Card) to layouts (Header, Footer) to features (AgentCard, AgentDetail).
 - **Navigation architecture (Phase 1):** Modular TopNavbar with composed components (NavLinks, SearchInput, UserMenu, MobileMenu) supporting desktop, tablet, and mobile responsive layouts.
+- **Home section architecture (Phase 2):** Modular home sections (HeroSection, QuickStartSection, RecentAgentsSection, CapabilitiesSection, Footer) composed into HomePage. Real agent data integrated from API. Framer Motion animations with stagger effects. Authentication-aware content visibility.
 
 **Testing:**
 - Test-driven approach: comprehensive automated testing for both frontend and backend.

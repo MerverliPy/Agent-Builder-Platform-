@@ -1,40 +1,99 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { Container, Section, Button } from '../components/ui'
+import { motion } from 'framer-motion'
+import { Container, Section, Grid } from '../components/ui'
+import TemplateCard from '../components/templates/TemplateCard'
+import { fadeIn, slideUp, staggerContainer, staggerItem } from '../lib/animations'
 
 /**
  * TemplatesPage Component
  * 
- * Placeholder page for agent templates.
- * This page will eventually display pre-configured agent templates
- * that users can quickly deploy.
+ * Displays pre-configured agent templates that users can use as starting points
+ * for creating their own custom agents.
  */
+
+const templates = [
+  {
+    id: 'developer-assistant',
+    name: 'Developer Assistant',
+    description: 'Helps with coding tasks, debugging, and technical questions',
+    skills: ['JavaScript', 'Python', 'Debugging', 'Code Review'],
+    responseStyle: 'Technical and detailed',
+  },
+  {
+    id: 'research-analyst',
+    name: 'Research Analyst',
+    description: 'Conducts research and provides data-driven insights',
+    skills: ['Data Analysis', 'Research', 'Reporting', 'Synthesis'],
+    responseStyle: 'Analytical and comprehensive',
+  },
+  {
+    id: 'customer-support',
+    name: 'Customer Support Agent',
+    description: 'Handles customer inquiries and provides helpful solutions',
+    skills: ['Customer Service', 'Problem Solving', 'Communication', 'Empathy'],
+    responseStyle: 'Friendly and helpful',
+  },
+  {
+    id: 'creative-writer',
+    name: 'Creative Writer',
+    description: 'Generates creative content and copywriting assistance',
+    skills: ['Writing', 'Storytelling', 'Copywriting', 'Brainstorming'],
+    responseStyle: 'Creative and engaging',
+  },
+  {
+    id: 'data-analyst',
+    name: 'Data Analyst',
+    description: 'Analyzes data and creates actionable insights',
+    skills: ['Data Analysis', 'Statistics', 'Visualization', 'SQL'],
+    responseStyle: 'Precise and data-driven',
+  },
+  {
+    id: 'technical-reviewer',
+    name: 'Technical Reviewer',
+    description: 'Reviews technical work and provides constructive feedback',
+    skills: ['Technical Review', 'Quality Assurance', 'Best Practices', 'Optimization'],
+    responseStyle: 'Professional and constructive',
+  },
+]
 
 export default function TemplatesPage() {
   return (
     <Section className="py-12">
       <Container>
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Templates</h1>
-            <p className="text-gray-600">Pre-configured agent templates coming soon</p>
+        <motion.div
+          variants={fadeIn}
+          initial="initial"
+          animate="animate"
+          className="space-y-8"
+        >
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Start from a template
+              </h1>
+              <p className="text-gray-600 max-w-2xl">
+                Choose from our pre-configured templates to quickly create agents
+                tailored to specific use cases. Customize them later to match your needs.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Coming Soon State */}
-        <div className="text-center py-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
-            <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon</h3>
-          <p className="text-gray-600 mb-6">Agent templates are currently in development. Check back soon!</p>
-          <Button as={Link} to="/agents">
-            View Agents
-          </Button>
-        </div>
+          {/* Templates Grid */}
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <Grid cols={{ default: 1, sm: 2, md: 3 }} gap={6}>
+              {templates.map((template) => (
+                <motion.div key={template.id} variants={staggerItem}>
+                  <TemplateCard {...template} />
+                </motion.div>
+              ))}
+            </Grid>
+          </motion.div>
+        </motion.div>
       </Container>
     </Section>
   )
