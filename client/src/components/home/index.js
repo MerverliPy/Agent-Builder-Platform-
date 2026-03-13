@@ -1,0 +1,5 @@
+export { HeroSection } from './HeroSection'
+export { QuickStartSection } from './QuickStartSection'
+export { RecentAgentsSection } from './RecentAgentsSection'
+export { CapabilitiesSection } from './CapabilitiesSection'
+export { Footer } from './Footer'
