@@ -17,6 +17,7 @@ const LLM_PROVIDERS = {
     'gemma2:2b',          // Gemma 2 2B - lightweight
     'qwen2.5',            // Alibaba Qwen 2.5 (7B)
     'qwen2.5:14b',        // Qwen 2.5 14B
+    'qwen2.5-coder:14b',  // Qwen 2.5 Coder 14B - specialized for coding
     'codellama',          // Meta's Code Llama - for coding tasks
     'deepseek-coder',     // DeepSeek Coder - excellent for code
   ]

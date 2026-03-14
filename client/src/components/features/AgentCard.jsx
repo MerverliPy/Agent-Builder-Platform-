@@ -24,6 +24,11 @@ export const AgentCard = ({ agent, className, onDelete, ...props }) => {
     navigate(`/agents/${agent.id}`)
   }
 
+  const handleTest = (e) => {
+    e.stopPropagation()
+    navigate(`/agents/${agent.id}/sandbox`)
+  }
+
   const handleDelete = (e) => {
     e.stopPropagation()
     if (onDelete) {
@@ -106,14 +111,25 @@ export const AgentCard = ({ agent, className, onDelete, ...props }) => {
         </CardContent>
 
         <CardFooter className="border-t border-neutral-100 pt-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClick}
-            fullWidth
-          >
-            View Details
-          </Button>
+          <div className="flex gap-2 w-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClick}
+              className="flex-1"
+            >
+              View Details
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleTest}
+              className="flex-1"
+              data-testid="test-agent-button"
+            >
+              Test
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </motion.div>
