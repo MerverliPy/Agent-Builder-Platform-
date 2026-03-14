@@ -35,6 +35,9 @@ async function clearAuthToken(page) {
   try {
     await page.evaluate(() => {
       try {
+        // App uses 'cabp_token' key for auth token
+        localStorage.removeItem('cabp_token');
+        // Also clear any legacy keys that might be used
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       } catch (e) {
@@ -50,6 +53,9 @@ async function setAuthToken(page, token, user) {
   try {
     await page.evaluate(({ token, user }) => {
       try {
+        // App uses 'cabp_token' key for auth token
+        localStorage.setItem('cabp_token', token);
+        // Also set legacy keys for backward compatibility
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
       } catch (e) {
@@ -65,7 +71,8 @@ async function getAuthToken(page) {
   try {
     return await page.evaluate(() => {
       try {
-        return localStorage.getItem('token');
+        // App uses 'cabp_token' key for auth token
+        return localStorage.getItem('cabp_token') || localStorage.getItem('token');
       } catch (e) {
         return null;
       }
