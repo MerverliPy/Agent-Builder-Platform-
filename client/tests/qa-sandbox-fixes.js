@@ -9,7 +9,7 @@
 
 const { chromium } = require('playwright');
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || 'http://100.81.83.98:3000';
 const AGENT_ID = process.env.AGENT_ID || 'ag_dddfa70952c75cfc';
 
 async function delay(ms) {
