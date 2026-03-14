@@ -127,30 +127,38 @@ test.describe('Authentication E2E Tests', () => {
     expect(token).toBeFalsy();
   });
 
-  test('should redirect to login when accessing protected route without auth', async ({ page }) => {
+  test('should show sign-in prompt when accessing agents page without auth', async ({ page }) => {
     await clearAuthToken(page);
     
-    // Try to access protected route
+    // Access agents page - it's publicly viewable but shows sign-in prompts
     await page.goto('/agents');
+    await page.waitForLoadState('networkidle');
     
-    // Should redirect to login
-    await page.waitForURL(/login/, { timeout: 10000 });
-    expect(page.url()).toContain('/login');
+    // Should stay on agents page (not redirect to login)
+    expect(page.url()).toContain('/agents');
+    
+    // Should show sign-in prompt instead of create button
+    const signInPrompt = page.locator('button:has-text("Sign in to create"), button:has-text("Sign In")');
+    await expect(signInPrompt.first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('should redirect to login when token is invalid', async ({ page }) => {
+  test('should show unauthenticated UI when token is invalid', async ({ page }) => {
     // Navigate to a page first to set up localStorage context
     await page.goto('/');
     
     // Set an invalid token
     await setAuthToken(page, 'invalid-token-xyz', { id: 'user123', username: 'test@example.com' });
     
-    // Try to access protected route
+    // Access agents page
     await page.goto('/agents');
+    await page.waitForLoadState('networkidle');
     
-    // Should redirect to login due to invalid token (or show unauthorized state)
-    await page.waitForURL(/login/, { timeout: 10000 });
-    expect(page.url()).toContain('/login');
+    // Should stay on agents page (not redirect)
+    expect(page.url()).toContain('/agents');
+    
+    // With invalid token, app should detect unauthenticated state and show sign-in UI
+    const signInButton = page.locator('button:has-text("Sign In"), button:has-text("Sign in")');
+    await expect(signInButton.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should persist authentication across page reloads', async ({ page }) => {

@@ -70,16 +70,20 @@ test.describe('Authentication E2E Tests (Simplified)', () => {
     expect(page.url()).toContain('/login');
   });
 
-  test('should redirect to login when accessing protected route without auth', async ({ page }) => {
-    // Clear auth and try to access protected route
+  test('should show sign-in prompt when accessing agents without auth', async ({ page }) => {
+    // Clear auth and try to access agents page
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
 
     await page.goto('/agents');
+    await page.waitForLoadState('networkidle');
 
-    // Should redirect to login or show sign-in prompt
-    await page.waitForURL(/login/, { timeout: 10000 });
-    expect(page.url()).toContain('/login');
+    // Agents page is publicly viewable but shows sign-in prompts
+    expect(page.url()).toContain('/agents');
+    
+    // Should show sign-in prompt instead of create button
+    const signInPrompt = page.locator('button:has-text("Sign in to create"), button:has-text("Sign In")');
+    await expect(signInPrompt.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should logout successfully', async ({ page }) => {
