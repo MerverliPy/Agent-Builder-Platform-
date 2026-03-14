@@ -60,6 +60,49 @@ router.post('/reset', async (req, res) => {
 })
 
 /**
+ * POST /api/test/set-roles
+ * 
+ * Sets roles for a user (test helper)
+ * Body: { username: string, roles: string[] }
+ */
+router.post('/set-roles', async (req, res) => {
+  try {
+    const { username, roles } = req.body
+    
+    if (!username || !roles || !Array.isArray(roles)) {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Requires username (string) and roles (array)'
+      })
+    }
+    
+    // Find user by username in general storage
+    const allItems = await storage.getAll()
+    const user = allItems.find(u => u.type === 'user' && u.username === username)
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+    
+    // Update user roles
+    await storage.update(user.id, { roles })
+    
+    res.json({
+      success: true,
+      userId: user.id,
+      username,
+      roles
+    })
+  } catch (error) {
+    console.error('Set roles error:', error)
+    res.status(500).json({
+      error: 'Failed to set roles',
+      message: error.message
+    })
+  }
+})
+
+/**
  * GET /api/test/health
  * 
  * Simple health check for test helpers endpoint

@@ -16,6 +16,7 @@ export const NavLinks = ({ className }) => {
   const navItems = [
     { label: 'Agents', path: '/agents' },
     { label: 'Templates', path: '/templates' },
+    { label: 'Reviews', path: '/reviews' },
   ]
 
   const isActive = (path) => {

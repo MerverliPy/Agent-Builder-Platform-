@@ -11,6 +11,8 @@ import TemplatesPage from './pages/TemplatesPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AccountPage from './pages/AccountPage'
+import ReviewQueuePage from './pages/ReviewQueuePage'
+import ReviewDetailPage from './pages/ReviewDetailPage'
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/reviews" element={<ReviewQueuePage />} />
+        <Route path="/reviews/:id" element={<ReviewDetailPage />} />
       </Routes>
     </PageLayout>
   )

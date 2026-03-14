@@ -9,3 +9,16 @@ coverage/
 /.cache/
 client/test-results/
 .aider*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+*.egg-info/
+
+# Misc
+test-results/
+*.txt
+opencode/

@@ -7,6 +7,7 @@ const agentsRouter = require('./routes/agents')
 const authRouter = require('./routes/auth')
 const mediaRouter = require('./routes/media')
 const adminRouter = require('./routes/admin')
+const reviewsRouter = require('./routes/reviews')
 const mountUploads = require('./staticUploads')
 
 function createApp() {
@@ -22,6 +23,7 @@ function createApp() {
   app.use('/api/admin', adminRouter)
   app.use('/api/agents', agentsRouter)
   app.use('/api/media', mediaRouter)
+  app.use('/api/reviews', reviewsRouter)
   
   // Test helpers - ONLY enable in test/development environments
   if (process.env.NODE_ENV === 'test' || process.env.ENABLE_TEST_ROUTES === 'true') {
