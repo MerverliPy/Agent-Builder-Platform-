@@ -6,6 +6,7 @@ const healthRouter = require('./routes/health')
 const agentsRouter = require('./routes/agents')
 const authRouter = require('./routes/auth')
 const mediaRouter = require('./routes/media')
+const adminRouter = require('./routes/admin')
 const mountUploads = require('./staticUploads')
 
 function createApp() {
@@ -18,6 +19,7 @@ function createApp() {
 
   app.use('/api/health', healthRouter)
   app.use('/api/auth', authRouter)
+  app.use('/api/admin', adminRouter)
   app.use('/api/agents', agentsRouter)
   app.use('/api/media', mediaRouter)
   

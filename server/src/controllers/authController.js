@@ -9,13 +9,18 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h'
 
 async function register(req, res, next) {
   try {
-    const { username, password, roles } = req.body || {}
+    const { username, password } = req.body || {}
     if (!username || !password) return res.status(400).json({ error: 'username and password required' })
     // ensure unique username
     const all = await storage.getAll()
     if (all.some(u => u.username === username)) return res.status(400).json({ error: 'username exists' })
     const hash = await bcrypt.hash(password, 8)
-    const user = normalizeUser({ username, passwordHash: hash, roles })
+    
+    // First user gets admin role, subsequent users are 'editor' by default
+    const existingUsers = all.filter(u => u.type === 'user')
+    const defaultRoles = existingUsers.length === 0 ? ['admin'] : ['editor']
+    
+    const user = normalizeUser({ username, passwordHash: hash, roles: defaultRoles })
     const created = await storage.create(Object.assign({}, user, { type: 'user' }))
     res.status(201).json({ id: created.id, username: created.username, roles: created.roles })
   } catch (err) { next(err) }
