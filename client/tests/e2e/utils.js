@@ -10,7 +10,7 @@ const API_BASE = process.env.VITE_API_BASE || 'http://localhost:5000/api'
  * 
  * NOTE: Requires ENABLE_TEST_ROUTES=true on the server.
  */
-export async function resetDatabase() {
+async function resetDatabase() {
   try {
     const response = await fetch(`${API_BASE}/test/reset`, {
       method: 'POST',
@@ -31,7 +31,7 @@ export async function resetDatabase() {
   }
 }
 
-export async function clearAuthToken(page) {
+async function clearAuthToken(page) {
   try {
     await page.evaluate(() => {
       try {
@@ -46,7 +46,7 @@ export async function clearAuthToken(page) {
   }
 }
 
-export async function setAuthToken(page, token, user) {
+async function setAuthToken(page, token, user) {
   try {
     await page.evaluate(({ token, user }) => {
       try {
@@ -61,7 +61,7 @@ export async function setAuthToken(page, token, user) {
   }
 }
 
-export async function getAuthToken(page) {
+async function getAuthToken(page) {
   try {
     return await page.evaluate(() => {
       try {
@@ -75,7 +75,7 @@ export async function getAuthToken(page) {
   }
 }
 
-export async function getCurrentUser(page) {
+async function getCurrentUser(page) {
   try {
     return await page.evaluate(() => {
       try {
@@ -90,30 +90,30 @@ export async function getCurrentUser(page) {
   }
 }
 
-export async function waitForApiResponse(page, urlPattern, timeout = 5000) {
+async function waitForApiResponse(page, urlPattern, timeout = 5000) {
   return page.waitForResponse(
     response => response.url().includes(urlPattern),
     { timeout }
   );
 }
 
-export async function fillForm(page, formData) {
+async function fillForm(page, formData) {
   for (const [selector, value] of Object.entries(formData)) {
     await page.fill(selector, value);
   }
 }
 
-export async function generateUniqueEmail() {
+async function generateUniqueEmail() {
   return `test-${Date.now()}@example.com`;
 }
 
 // Common selectors that prefer data-testid attributes but fall back to input types
-export const usernameSelector = 'input[data-testid*="username"], input[data-testid*="agent-name"], input[type="email"]'
-export const passwordSelector = 'input[data-testid*="password"], input[type="password"]'
-export const confirmSelector = 'input[data-testid="register-confirm-password"], input[placeholder*="Confirm"]'
+const usernameSelector = 'input[data-testid*="username"], input[data-testid*="agent-name"], input[type="email"]'
+const passwordSelector = 'input[data-testid*="password"], input[type="password"]'
+const confirmSelector = 'input[data-testid="register-confirm-password"], input[placeholder*="Confirm"]'
 
 // Helper to fill auth/register forms consistently
-export async function fillAuthFields(page, username, password, confirm = null) {
+async function fillAuthFields(page, username, password, confirm = null) {
   // Wait for fields to appear and fill them; be resilient if data-testid isn't present
   try {
     await page.waitForSelector(usernameSelector, { timeout: 5000 })
@@ -144,4 +144,20 @@ export async function fillAuthFields(page, username, password, confirm = null) {
       if (cnt > 2) await editable.nth(2).fill(confirm)
     }
   }
+}
+
+// Export all functions and constants using CommonJS
+module.exports = {
+  resetDatabase,
+  clearAuthToken,
+  setAuthToken,
+  getAuthToken,
+  getCurrentUser,
+  waitForApiResponse,
+  fillForm,
+  generateUniqueEmail,
+  usernameSelector,
+  passwordSelector,
+  confirmSelector,
+  fillAuthFields
 }
