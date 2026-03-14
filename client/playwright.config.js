@@ -36,7 +36,7 @@ module.exports = defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: process.env.CI ? undefined : {
     command: 'npm run start',
     url: process.env.PLAYWRIGHT_BASE_URL || 'http://100.81.83.98:3000',
     reuseExistingServer: true,
