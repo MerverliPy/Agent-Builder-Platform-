@@ -183,7 +183,22 @@ pm2 startup  # Enable on boot
 ## Next Steps After Installation
 
 1. ✓ Services installed and running
-2. ☐ Change JWT_SECRET in `/etc/cabp.env`
+2. ☐ Change JWT_SECRET in `/etc/cabp.env` (CRITICAL: use a strong random secret)
 3. ☐ Test application at http://100.81.83.98:3000
-4. ☐ Create initial admin user
+4. ☐ Create initial admin user via `/api/auth/register` endpoint (first user automatically becomes admin)
 5. ☐ Configure backup strategy for database
+
+## Creating the Initial Admin User
+
+To create your first admin user:
+
+```bash
+curl -X POST http://100.81.83.98:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "your-strong-password"
+  }'
+```
+
+The first user to register automatically receives the `admin` role. Subsequent users will be created with the `editor` role by default and can be promoted to admin via the `/api/admin/users/:id/role` endpoint.
