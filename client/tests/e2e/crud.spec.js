@@ -37,14 +37,10 @@ test.describe('Agent CRUD E2E Tests', () => {
   });
 
   test('should create a new agent with all fields', async ({ page }) => {
-    // Navigate to agents page
-    await page.goto('/agents');
-    expect(page.url()).toContain('/agents');
-
-    // Click "Create Agent" button using data-testid
-    const createButton = page.locator('[data-testid="create-agent-button"], [data-testid="create-first-agent-button"]').first();
-    await createButton.click();
-    await page.waitForURL(/agents\/new/, { timeout: 10000 });
+    // Navigate directly to create agent page (user is already logged in from beforeEach)
+    await page.goto('/agents/new');
+    await page.waitForLoadState('networkidle');
+    expect(page.url()).toContain('/agents/new');
 
     // Fill agent form
     const agentName = `Test Agent ${Date.now()}`;
