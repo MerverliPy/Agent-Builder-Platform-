@@ -1,95 +1,113 @@
 const { test, expect } = require('@playwright/test');
+const { fillAuthFields, resetDatabase, clearAuthToken, getAuthToken, generateUniqueEmail } = require('./utils');
 
 test.describe('Authentication E2E Tests (Simplified)', () => {
-  const { fillAuthFields } = require('./utils');
+  test.beforeAll(async () => {
+    await resetDatabase();
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await clearAuthToken(page);
+  });
 
   test('should register a new user successfully', async ({ page }) => {
-    // Navigate directly to the register page to avoid ambiguous nav selectors
+    // Navigate directly to the register page
     await page.goto('/register');
     
-    const username = `testuser${Date.now()}`;
+    const username = await generateUniqueEmail();
     const password = 'TestPass123!';
 
-    // Fill form using helper that prefers data-testid
-    await page.waitForSelector('input', { timeout: 5000 });
-    await fillAuthFields(page, username, password, password);
-    // Submit form - prefer the explicit Create account button on RegisterPage
-    await page.click('button:has-text("Create account"), button[type="submit"], button:has-text("Register"), button:has-text("Sign up")');
+    // Fill form using data-testid selectors
+    await page.fill('[data-testid="register-username"]', username);
+    await page.fill('[data-testid="register-password"]', password);
+    await page.fill('[data-testid="register-confirm-password"]', password);
+    
+    // Submit form
+    await page.click('[data-testid="register-submit"]');
 
-    // Should redirect to agents or show success
-    await page.waitForNavigation({ timeout: 5000 }).catch(() => {});
-    expect(page.url()).toMatch(/agents|dashboard|login/);
+    // Should redirect to agents, dashboard, or login
+    await page.waitForURL(/agents|dashboard|login/, { timeout: 10000 });
   });
 
   test('should login with valid credentials', async ({ page }) => {
-    const username = 'testuser123';
+    const username = await generateUniqueEmail();
     const password = 'TestPass123!';
 
-    // First register using helper
+    // First register
     await page.goto('/register');
-    const uniqueUsername = `${username}${Date.now()}`;
-    await fillAuthFields(page, `${uniqueUsername}`, password, password);
-    await page.click('button[type="submit"], button:has-text("Register"), button:has-text("Create account")');
-    await page.waitForNavigation().catch(() => {});
+    await page.fill('[data-testid="register-username"]', username);
+    await page.fill('[data-testid="register-password"]', password);
+    await page.fill('[data-testid="register-confirm-password"]', password);
+    await page.click('[data-testid="register-submit"]');
+    await page.waitForURL(/agents|dashboard|login/, { timeout: 10000 });
 
-    // Now login using helper
+    // Clear auth and go to login
+    await clearAuthToken(page);
     await page.goto('/login');
-    await fillAuthFields(page, `${uniqueUsername}`, password);
-    await page.click('button[type="submit"], button:has-text("Login"), button:has-text("Sign in")');
+    
+    // Login using data-testid
+    await page.fill('[data-testid="login-username"]', username);
+    await page.fill('[data-testid="login-password"]', password);
+    await page.click('[data-testid="login-submit"]');
 
-    // Should redirect to agents
-    await page.waitForNavigation();
-    expect(page.url()).toContain('/agents');
+    // Should redirect to agents or dashboard
+    await page.waitForURL(/agents|dashboard/, { timeout: 10000 });
   });
 
   test('should not login with invalid credentials', async ({ page }) => {
     await page.goto('/login');
-    // use helper to reliably fill fields
-    await fillAuthFields(page, 'nonexistent@test.com', 'WrongPassword123!');
-    await page.click('button[type="submit"], button:has-text("Login"), button:has-text("Sign in")');
+    
+    // Try login with wrong credentials
+    await page.fill('[data-testid="login-username"]', 'nonexistent@test.com');
+    await page.fill('[data-testid="login-password"]', 'WrongPassword123!');
+    await page.click('[data-testid="login-submit"]');
 
-    // Wait for error or check URL hasn't changed
+    // Wait a moment for error handling
     await page.waitForTimeout(2000);
+    
+    // Should still be on login page
     expect(page.url()).toContain('/login');
   });
 
   test('should redirect to login when accessing protected route without auth', async ({ page }) => {
-    // Navigate to app origin then clear auth storage
+    // Clear auth and try to access protected route
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
 
     await page.goto('/agents');
 
-    // App may either redirect to /login or show a sign-in CTA on the Agents page.
-    // Accept either behavior to make test resilient.
-    const signInSelector = 'button:has-text("Sign in"), button:has-text("Login")'
-    const signInVisible = await page.locator(signInSelector).first().isVisible().catch(() => false)
-    if (!signInVisible) {
-      await page.waitForURL(/login/, { timeout: 5000 });
-      expect(page.url()).toContain('/login');
-    } else {
-      expect(signInVisible).toBeTruthy();
-    }
+    // Should redirect to login or show sign-in prompt
+    await page.waitForURL(/login/, { timeout: 10000 });
+    expect(page.url()).toContain('/login');
   });
 
   test('should logout successfully', async ({ page }) => {
     // Register and login first
-    const username = `logout${Date.now()}`;
+    const username = await generateUniqueEmail();
     const password = 'TestPass123!';
 
     await page.goto('/register');
-    await fillAuthFields(page, username, password, password);
-    await page.click('button[type="submit"], button:has-text("Create account"), button:has-text("Register")');
-    await page.waitForNavigation().catch(() => {});
+    await page.fill('[data-testid="register-username"]', username);
+    await page.fill('[data-testid="register-password"]', password);
+    await page.fill('[data-testid="register-confirm-password"]', password);
+    await page.click('[data-testid="register-submit"]');
+    await page.waitForURL(/agents|dashboard|login/, { timeout: 10000 });
 
-    // Find and click logout
-    const buttons = await page.locator('button').allTextContents();
-    if (buttons.some(t => t.includes('Logout'))) {
-      await page.click('button:has-text("Logout")');
-      
-      // Should redirect to login or home
-      await page.waitForNavigation().catch(() => {});
-      expect(['/login', '/']).toContain(page.url().split('?')[0].split(':')[2]?.split('/')[1] || '/');
+    // If redirected to login, log in
+    if (page.url().includes('/login')) {
+      await page.fill('[data-testid="login-username"]', username);
+      await page.fill('[data-testid="login-password"]', password);
+      await page.click('[data-testid="login-submit"]');
+      await page.waitForURL(/agents|dashboard/, { timeout: 10000 });
     }
+
+    // Click user menu then logout
+    await page.click('[data-testid="user-menu-button"]');
+    await page.click('[data-testid="logout-button"]');
+    
+    // Should redirect to login
+    await page.waitForURL(/login/, { timeout: 10000 });
+    expect(page.url()).toContain('/login');
   });
 });

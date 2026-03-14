@@ -1,68 +1,71 @@
 const { test, expect } = require('@playwright/test');
+const { resetDatabase, clearAuthToken, generateUniqueEmail } = require('./utils');
 
 test.describe('Navigation E2E Tests (Simplified)', () => {
+  test.beforeAll(async () => {
+    await resetDatabase();
+  });
+
   test('should load home page', async ({ page }) => {
     await page.goto('/');
-    expect(page.url()).toMatch(/localhost:3000|100.81.83.98:3000/);
+    const bodyText = await page.textContent('body');
+    expect(bodyText).toBeTruthy();
   });
 
   test('should navigate to login page', async ({ page }) => {
-    // Just navigate directly to login page
     await page.goto('/login');
     expect(page.url()).toContain('/login');
   });
 
   test('should navigate to register page', async ({ page }) => {
-    // Just navigate directly to register page
     await page.goto('/register');
     expect(page.url()).toContain('/register');
   });
 
   test('should access agents page after login', async ({ page }) => {
-    // Register and login
-    const username = `navtest${Date.now()}`;
+    const username = await generateUniqueEmail();
     const password = 'TestPass123!';
 
+    // Register
     await page.goto('/register');
-    const { fillAuthFields } = require('./utils');
-    await fillAuthFields(page, username, password, password);
-    await page.click('button[type="submit"], button:has-text("Register"), button:has-text("Create account")');
-    await page.waitForNavigation();
+    await page.fill('[data-testid="register-username"]', username);
+    await page.fill('[data-testid="register-password"]', password);
+    await page.fill('[data-testid="register-confirm-password"]', password);
+    await page.click('[data-testid="register-submit"]');
+    await page.waitForURL(/login|dashboard|agents/, { timeout: 10000 });
 
-    // Should be on agents page
-    expect(page.url()).toContain('/agents');
+    // If redirected to login, log in
+    if (page.url().includes('/login')) {
+      await page.fill('[data-testid="login-username"]', username);
+      await page.fill('[data-testid="login-password"]', password);
+      await page.click('[data-testid="login-submit"]');
+      await page.waitForURL(/dashboard|agents/, { timeout: 10000 });
+    }
+
+    // Should be on agents or dashboard page
+    const url = page.url();
+    expect(url.includes('/agents') || url.includes('/dashboard')).toBeTruthy();
   });
 
   test('should redirect to login for protected routes without auth', async ({ page }) => {
-    // Navigate to origin first so localStorage is accessible
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
+    await clearAuthToken(page);
+    
     await page.goto('/agents');
-    
-    // App may either redirect to /login or show a sign-in CTA on the Agents page.
-    // Accept either behavior to make test resilient.
-    const signInSelector = 'button:has-text("Sign in"), button:has-text("Login"), a:has-text("Login")';
-    const signInVisible = await page.locator(signInSelector).first().isVisible().catch(() => false);
-    
-    if (!signInVisible) {
-      await page.waitForURL(/login/, { timeout: 3000 });
-      expect(page.url()).toContain('/login');
-    } else {
-      // Agents page is shown with sign-in CTA
-      expect(signInVisible).toBeTruthy();
-    }
+    await page.waitForURL(/login/, { timeout: 10000 });
+    expect(page.url()).toContain('/login');
   });
 
   test('should handle 404 gracefully', async ({ page }) => {
     await page.goto('/nonexistent-page-xyz');
+    await page.waitForTimeout(1000);
     
     // Should either show 404 or redirect
-    await page.waitForTimeout(1000);
     const url = page.url();
     expect(
       url.includes('nonexistent') ||
       url.includes('/login') ||
-      url === 'http://localhost:3000/'
+      url.endsWith('/')
     ).toBeTruthy();
   });
 });
