@@ -43,18 +43,31 @@ Stabilize Playwright E2E testing across all non-simple test specs, implement tes
   - Storage: sessionStorage with `cabp_sandbox_{agentId}` prefix
   - Related components: ChatMessage.jsx, MessageComposer.jsx
 - Verified server/client architecture and storage implementation
+- **NEW**: Created comprehensive `SANDBOX_GUIDE.md` with feature documentation and user guide
+- **NEW**: Enhanced `DEPLOYMENT.md` with admin user creation instructions
 
 ### Git Commits
 - **Commit dfa213a**: "test(e2e): add database reset for test isolation to all E2E tests" — integrated resetDatabase into all non-simple E2E specs and updated CI workflow
 - **Commit 291d9d9**: "config: configure Tailscale IP support (100.81.83.98)" — updated vite, playwright, and qa test configs for Tailscale network access
+- **Commit 75d009d**: "refactor(e2e): simplify resetDatabase hook syntax in crud.spec.js" — simplified test hook syntax for consistency (✅ READY TO PUSH)
+- **Commit 25ac730**: "docs: add Sandbox feature guide and clarify admin user creation in deployment guide" — added comprehensive documentation (✅ READY TO PUSH)
 
 ## Pending Work
 
+### High Priority
+- Push commits to GitHub (requires elevation of git push permissions)
 - Verify full E2E test suite passes in CI with database reset
 - Test application access from another machine on Tailscale network
-- Optional: Add `/api/test/reset` call to simple E2E test specs for complete isolation
+
+### Medium Priority
+- Optional: Add `/api/test/reset` call to simple E2E test specs for complete isolation (currently only in non-simple specs)
 - Optional: Consider per-test (not just per-suite) database reset for maximum isolation
 - Optional: Add resetDatabase to E2E test setup.js for automatic integration
+
+### Low Priority
+- Monitor CI logs for any remaining flaky tests and address root causes
+- Expand `data-testid` coverage to remaining frequently-targeted UI elements
+- Add Playwright traces/screenshots upload to CI artifacts for failing tests
 
 ## Relevant Files
 
@@ -141,7 +154,26 @@ sleep 2
 
 ## Exact Next Step
 
-1. **Verify CI passes with full E2E suite**: Push changes and monitor GitHub Actions run. Expect all ~43 non-simple tests + 21 simple tests to pass with database reset between suites.
-2. **Test Tailscale network access**: Access http://100.81.83.98:3000 from another machine on Tailscale network.
-3. **Document Sandbox feature**: Create guide for using Agent Sandbox with mock responses and personality styles.
-4. **Optional optimization**: Consider per-test (not suite-level) database reset for maximum isolation if flakiness persists.
+### Current Session Progress (March 14, 2026)
+
+#### Completed This Session
+- ✅ **Sandbox Feature Documentation**: Created comprehensive `SANDBOX_GUIDE.md` with:
+  - Overview of sandbox features (live chat, dual-mode operation)
+  - Complete guide to all 4 personality styles (Concise, Friendly, Technical, Teacher)
+  - Detailed explanation of conversation persistence via sessionStorage
+  - Rate limiting documentation (1s minimum between messages)
+  - Technical implementation details and troubleshooting
+  - Future enhancement suggestions
+- ✅ **Deployment Guide Update**: Enhanced `DEPLOYMENT.md` with:
+  - Clear instructions for creating initial admin user via `/api/auth/register`
+  - Explanation that first user automatically becomes admin
+  - Clarified that no default password exists; users set their own on registration
+- ✅ **Code Cleanup**: Simplified `resetDatabase` hook syntax in `crud.spec.js` for consistency
+
+#### Ready for Next Session
+1. **Push pending commits to GitHub** (2 commits awaiting push):
+   - `75d009d` refactor(e2e): simplify resetDatabase hook syntax in crud.spec.js
+   - `25ac730` docs: add Sandbox feature guide and clarify admin user creation in deployment guide
+2. **Verify CI passes with full E2E suite**: After pushing, monitor GitHub Actions E2E workflow. Expect ~64 tests (21 simple + 43 non-simple) to pass with database reset between suites.
+3. **Test Tailscale network access**: Access http://100.81.83.98:3000 from another machine on Tailscale network to verify external accessibility.
+4. **Optional optimization**: Consider per-test (not suite-level) database reset for maximum isolation if flakiness persists after CI verification.
