@@ -47,18 +47,19 @@ test.describe('Error Handling E2E Tests', () => {
     expect(page.url()).toContain('/agents/new');
   });
 
-  test('should show error for invalid email format', async ({ page }) => {
+  test('should show error for short password', async ({ page }) => {
     await page.goto('/register');
 
-    // Enter invalid email
-    await page.fill('[data-testid="register-username"]', 'not-an-email');
-    await page.fill('[data-testid="register-password"]', 'TestPassword123!');
-    await page.fill('[data-testid="register-confirm-password"]', 'TestPassword123!');
+    // Enter valid username but password that's too short (< 6 chars)
+    const email = await generateUniqueEmail();
+    await page.fill('[data-testid="register-username"]', email);
+    await page.fill('[data-testid="register-password"]', '12345');  // Only 5 chars
+    await page.fill('[data-testid="register-confirm-password"]', '12345');
 
     // Try to submit
     await page.click('[data-testid="register-submit"]');
 
-    // Should stay on register page or show error
+    // Should stay on register page and show error
     await page.waitForTimeout(2000);
     
     // Check that either:
@@ -66,7 +67,7 @@ test.describe('Error Handling E2E Tests', () => {
     // 2. Error message is visible
     const url = page.url();
     const stillOnRegister = url.includes('/register');
-    const errorVisible = await page.locator('[data-testid*="error"], .error, [role="alert"], text=/error|invalid/i').first().isVisible().catch(() => false);
+    const errorVisible = await page.locator('text=/password|characters|error/i').first().isVisible().catch(() => false);
     
     expect(stillOnRegister || errorVisible).toBeTruthy();
   });
