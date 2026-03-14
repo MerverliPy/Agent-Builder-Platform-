@@ -52,9 +52,9 @@ Custom Agent Builder Platform (CABP) is a minimal full‑stack application that 
 **Infrastructure:**
 - Docker + docker‑compose for containerized deployments
 - systemd for host process management (unit templates provided)
-- Tailscale (external network) — recommended network for remote access; app binds to configurable host IP
+- Tailscale (external network) — recommended network for remote access; app configured with flexible host/IP binding via environment variables (HOST/BIND_ADDR/PORT)
 - GitHub Actions (CI/CD)
-- Playwright for E2E testing
+- Playwright for E2E testing with test isolation via `/api/test/reset` endpoint
 
 ## Design Decisions
 
@@ -81,7 +81,8 @@ Custom Agent Builder Platform (CABP) is a minimal full‑stack application that 
 - Test-driven approach: comprehensive automated testing for both frontend and backend.
 - Backend testing: Jest with Supertest for API endpoint testing, role-based permission testing, and integration tests.
 - Frontend testing: Vitest with React Testing Library for component unit tests, user interaction testing, and integration tests.
-- Test isolation: each test independent with proper setup/teardown, mocked external dependencies.
+- E2E testing: Playwright for end-to-end user journey testing with test isolation via database cleanup endpoints.
+- Test isolation: each test independent with proper setup/teardown, mocked external dependencies; E2E tests call `/api/test/reset` in beforeAll hooks to ensure clean database state.
 - Coverage targets: high coverage for critical paths (auth, CRUD operations, RBAC).
 - CI integration: tests run automatically on pull requests and merges.
 

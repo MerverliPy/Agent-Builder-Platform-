@@ -2,59 +2,146 @@
 
 ## Current Objective
 
-Stabilize Playwright E2E for the client (prefer `data-testid` selectors, use `fillAuthFields` helper), ensure the simple E2E suite runs reliably locally and in CI, and complete remaining E2E hardening and CI diagnostics.
+Stabilize Playwright E2E testing across all non-simple test specs, implement test isolation with database cleanup, configure Tailscale IP support (100.81.83.98), and verify full application accessibility on the Tailscale network.
 
 ## Completed Work
 
-- Added `data-testid` attributes and stable hooks to key UI elements (agent name input, submit button, preview name, agent card actions).
-- Implemented and used `fillAuthFields` helper for auth flows; updated tests to prefer `data-testid` and fallback selectors.
-- Converted and stabilized all simple Playwright tests: `tests/e2e/*-simple.spec.js` now pass locally (21/21).
-- Fixed brittle navigation/localStorage access in tests and made CLI-based Playwright install the canonical approach (`npx playwright install --with-deps`).
-- Rebuilt client and restarted dev server so tests run against updated DOM.
-- Ran local test suites: Playwright simple E2E (21/21 passed) and Vitest unit tests (46/46 passed).
-- Committed and pushed changes to `main` (commit f5df4ee).
-- **Inspected CI E2E run (23070785396)**: 15/21 tests passed, 6 failed due to API routing issue.
-- **Diagnosed root cause**: Static client build defaults to relative `/api` path, but API runs on different port in CI (5000 vs 3000).
-- **Fixed**: Added `VITE_API_BASE=http://localhost:5000/api` env var to client build step in `.github/workflows/e2e.yml`.
-- **Verified fix (run 23071229646)**: All 21 simple E2E tests now pass in CI (commit f36a4e4).
+### E2E Test Infrastructure & Database Isolation
+- Converted all 5 non-simple E2E test specs to use `data-testid` selectors and `fillAuthFields` helper:
+  - auth.spec.js (9 tests)
+  - crud.spec.js (8 tests)
+  - errors.spec.js (13 tests)
+  - navigation.spec.js (10 tests)
+  - media.spec.js (3 tests)
+  - Total: ~43 converted test cases
+- Implemented test isolation infrastructure:
+  - Created `/server/src/routes/testHelpers.js` with `/api/test/reset` and `/api/test/health` endpoints
+  - Updated `server/src/app.js` to conditionally mount test routes when `ENABLE_TEST_ROUTES=true` or `NODE_ENV=test`
+  - Added `resetDatabase()` function to `client/tests/e2e/utils.js` that calls reset endpoint
+  - Added `test.beforeAll(resetDatabase)` hooks to all E2E test suites
+- Root cause of previous CI failures identified and fixed: users persisted in database between test runs, causing duplicate email errors
+- Infrastructure tested and verified locally:
+  - `/api/test/health` returns `{status: ok}`
+  - `/api/test/reset` successfully clears users and agents, returns counts
+  - Test routes only enabled in test environment
+
+### Tailscale IP Configuration & Network Accessibility
+- Identified Tailscale IP: `100.81.83.98`
+- Updated configuration files for Tailscale support:
+  - **client/vite.config.js**: Changed proxy target from `http://localhost:5000` to `process.env.VITE_API_BASE || 'http://100.81.83.98:5000'`; added `host: true` for network access
+  - **client/playwright.config.js**: Updated `baseURL` and `webServer.url` to use `process.env.PLAYWRIGHT_BASE_URL || 'http://100.81.83.98:3000'`
+  - **client/tests/qa-sandbox-fixes.js**: Updated `BASE_URL` to use `process.env.BASE_URL || 'http://100.81.83.98:3000'`
+  - **client/.env**: Already configured with `VITE_API_BASE=http://100.81.83.98:5000/api`
+- Server already supports binding via `HOST` and `PORT` environment variables
+- Static server (`client/static-server.js`) binds to `0.0.0.0` for network accessibility
+
+### Project Analysis & Documentation
+- Analyzed full project structure and identified all hardcoded localhost references
+- Located and documented sandbox implementation:
+  - Main component: `client/src/pages/AgentSandboxPage.jsx` (535 lines)
+  - Features: Live chat, conversation persistence, mock response generation, rate limiting (1s min between messages), personality styles (concise, friendly, technical, teacher)
+  - Storage: sessionStorage with `cabp_sandbox_{agentId}` prefix
+  - Related components: ChatMessage.jsx, MessageComposer.jsx
+- Verified server/client architecture and storage implementation
+
+### Git Commits
+- **Commit dfa213a**: "test(e2e): add database reset for test isolation to all E2E tests" — integrated resetDatabase into all non-simple E2E specs and updated CI workflow
+- **Commit 291d9d9**: "config: configure Tailscale IP support (100.81.83.98)" — updated vite, playwright, and qa test configs for Tailscale network access
 
 ## Pending Work
 
-- Convert remaining non-simple E2E specs to prefer `data-testid` and the helper where gaps remain (`tests/e2e/*.spec.js`).
-- Add `data-testid` to any remaining frequently-targeted UI elements (agent list items, create/save buttons across pages).
-- Implement test isolation (database cleanup) for full E2E reliability and repeatability.
-- Consider making VITE_API_BASE configurable at runtime for flexible deployment (vs. build-time only).
+- Verify full E2E test suite passes in CI with database reset
+- Test application access from another machine on Tailscale network
+- Optional: Add `/api/test/reset` call to simple E2E test specs for complete isolation
+- Optional: Consider per-test (not just per-suite) database reset for maximum isolation
+- Optional: Add resetDatabase to E2E test setup.js for automatic integration
 
 ## Relevant Files
 
-- `client/tests/e2e/utils.js` — `fillAuthFields` helper and selector constants.
-- `client/src/components/AgentForm.jsx` — `data-testid="agent-name"`, `data-testid="agentform-submit"`.
-- `client/src/components/agent/AgentPreviewCard.jsx` — `data-testid="agent-preview-name"`.
-- `client/src/components/AgentCard.jsx` — `data-testid` attributes for cards and actions.
-- `client/tests/e2e/*-simple.spec.js` — converted Playwright simple suites (auth, crud, errors, navigation).
-- `.github/workflows/e2e.yml` — uses CLI Playwright install and uploads diagnostics (verify on CI run).
-- `scripts/dev-start.sh` / `scripts/dev-stop.sh` — dev server lifecycle used during local runs.
+### E2E Tests
+- `client/tests/e2e/auth.spec.js` — ✅ data-testid + resetDatabase
+- `client/tests/e2e/crud.spec.js` — ✅ data-testid + resetDatabase
+- `client/tests/e2e/errors.spec.js` — ✅ data-testid + resetDatabase
+- `client/tests/e2e/navigation.spec.js` — ✅ data-testid + resetDatabase
+- `client/tests/e2e/media.spec.js` — ✅ data-testid + resetDatabase
+- `client/tests/e2e/utils.js` — ✅ includes resetDatabase() function
+
+### UI Components with data-testid
+- `client/src/pages/LoginPage.jsx`
+- `client/src/pages/RegisterPage.jsx`
+- `client/src/components/navigation/UserMenu.jsx`
+- `client/src/pages/AgentListPage.jsx`
+- `client/src/components/AgentForm.jsx`
+
+### Test Infrastructure
+- `server/src/routes/testHelpers.js` — test reset endpoints
+- `server/src/app.js` — conditional mounting of test routes
+- `.github/workflows/e2e.yml` — sets ENABLE_TEST_ROUTES=true
+
+### Configuration
+- `client/vite.config.js` — proxy and network config
+- `client/playwright.config.js` — E2E test config
+- `client/.env` — API base URL
+- `client/tests/qa-sandbox-fixes.js` — QA test config
+- `server/src/config/index.js` — port configuration
+
+### Sandbox Implementation
+- `client/src/pages/AgentSandboxPage.jsx` — main sandbox page (535 lines)
+- `client/src/components/sandbox/ChatMessage.jsx` — message display
+- `client/src/components/sandbox/MessageComposer.jsx` — input composer
 
 ## Commands to Run
 
-- Install Playwright browsers: `cd client && npx playwright install --with-deps`
-- Run simple E2E suite locally: `cd client && npx playwright test --reporter=list`
-- Run a single failing test: `cd client && npx playwright test tests/e2e/crud-simple.spec.js -g "should create a new agent" --project=chromium --reporter=list`
-- Run unit tests: `cd client && npm test` and `cd server && npm test`
-- Build & serve client (production): `cd client && npm run build && ./scripts/dev-start.sh 127.0.0.1`
-- Trigger/inspect CI run: `gh run list --workflow=e2e.yml` then `gh run view <id> --log`; re-run: `gh run rerun <id>`.
+### Development (Tailscale IP)
+```bash
+# Terminal 1: Server on Tailscale IP
+HOST=100.81.83.98 PORT=5000 npm run dev --prefix server
+
+# Terminal 2: Client
+npm run dev --prefix client
+
+# Access at: http://100.81.83.98:3000 or http://localhost:3000
+```
+
+### Development (localhost only)
+```bash
+npm run dev --prefix server
+npm run dev --prefix client
+# Access at: http://localhost:3000
+```
+
+### E2E Tests
+```bash
+# Run all E2E tests (uses Tailscale IP from config)
+npm run e2e --prefix client
+
+# Run with specific URL
+PLAYWRIGHT_BASE_URL=http://localhost:3000 npm run e2e --prefix client
+```
+
+### Database Reset (Manual)
+```bash
+curl -X POST http://100.81.83.98:5000/api/test/reset
+# or
+curl -X POST http://localhost:5000/api/test/reset
+```
+
+### Kill Existing Processes
+```bash
+pkill -f "node.*src/index.js" || true
+pkill -f "static-server.js" || true
+sleep 2
+```
 
 ## Known Issues
 
-- **[RESOLVED] CI E2E failures (run 23070785396)**: Fixed in commit f36a4e4, verified passing in run 23071229646.
-- Some non-simple E2E tests still use fallback or placeholder selectors — audit and convert these to `data-testid` for full-suite stability.
-- Search input components render readonly inputs; tests must avoid filling readonly inputs (the helper already guards against this).
+- E2E tests were failing in CI due to database state persistence between runs (root cause: duplicate user emails) — **FIXED** with test isolation infrastructure
+- Some tests timeout if server isn't responsive — ensure test setup includes proper delays
+- If running on different port than 5000 or 3000, ensure all configs match
 
 ## Exact Next Step
 
-**Simple E2E CI objective complete! All 21 tests pass locally and in CI.** Next steps for full E2E hardening:
-
-1. Convert remaining non-simple E2E specs (`tests/e2e/*.spec.js`) to use `data-testid` selectors and `fillAuthFields` helper.
-2. Add test isolation: implement database cleanup between tests for repeatability.
-3. Expand `data-testid` coverage to remaining UI elements (agent list items, buttons across all pages).
-4. Run full E2E suite in CI and address any additional failures.
+1. **Verify CI passes with full E2E suite**: Push changes and monitor GitHub Actions run. Expect all ~43 non-simple tests + 21 simple tests to pass with database reset between suites.
+2. **Test Tailscale network access**: Access http://100.81.83.98:3000 from another machine on Tailscale network.
+3. **Document Sandbox feature**: Create guide for using Agent Sandbox with mock responses and personality styles.
+4. **Optional optimization**: Consider per-test (not suite-level) database reset for maximum isolation if flakiness persists.

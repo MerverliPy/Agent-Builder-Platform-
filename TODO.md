@@ -2,20 +2,21 @@
 
 ## High Priority
 
-- Complete conversion of remaining non-simple E2E specs to use `data-testid` and `fillAuthFields` helper
-- Improve CI diagnostics for Playwright installs (capture install logs to /tmp and upload as artifacts)
-- Implement test isolation with database cleanup between E2E tests
-- Add `data-testid` to remaining frequently-targeted UI elements (agent list items, create/save buttons)
-- Integrate full E2E suite into CI and verify on ubuntu runners
+- Verify full E2E test suite passes in CI (expect ~64 tests: 21 simple + 43 non-simple, all with database isolation)
+- Expand `data-testid` coverage to remaining frequently-targeted UI elements (agent list items, all buttons across pages)
+- Consider per-test database reset for maximum isolation (currently per-suite via test.beforeAll)
+- Test application access from another machine on Tailscale network (verify 100.81.83.98 accessibility)
 - Change admin password from default `admin123` to a secure value
 
 ## Medium Priority
 
+- Document Agent Sandbox feature usage guide (personality styles, mock responses, conversation persistence)
+- Add optional simple E2E test specs to use database reset for consistency
+- Integrate full E2E suite diagnostics into CI (capture failures, traces, screenshots)
+- Improve E2E test performance and reduce flakiness with better timeout/retry strategies
 - Add visual regression testing with Playwright or Percy
 - Expand E2E coverage: user profile flows, agent templates, bulk operations
-- Improve E2E test performance and flakiness mitigations (timeouts, retries)
 - Implement advanced search and filtering for agents
-- Add toast notification system and modal dialog primitives
 
 ## Low Priority
 
@@ -24,6 +25,7 @@
 - Move uploads to S3 (or object storage) with signed URLs
 - Add autoscaling manifests (Kubernetes/Helm) for cloud deploys
 - Migrate codebase to TypeScript (long-term)
+- Add toast notification system and modal dialog primitives
 
 ## Technical Debt
 
@@ -32,16 +34,31 @@
 - Review and harden client dependency chain and address dev-dep vulnerabilities
 - Clean up unused CSS after Tailwind migration
 - Improve mobile cache-busting strategy for deployments
+- Audit environment variable configuration and document all options
+- Review Tailscale/network binding for security implications
 
 ## New / Discovered Tasks
 
-- Fetch and analyze latest E2E run logs and fix CI-specific failures (Playwright install or brittle selectors)
+- Monitor next CI E2E run to identify any remaining flaky tests after database isolation implementation
 - Harden Ollama provider handling: availability retries, cache invalidation, and tests
 - Add conversation export (download transcript) in sandbox UI
 - Add integration tests for LLM routing and conversation persistence (mock + real provider cases)
 - Add Playwright traces/screenshots upload to CI artifacts for failing tests
+- Document environment variable overrides for local testing (PLAYWRIGHT_BASE_URL, BASE_URL, HOST, PORT)
+- Consider configuration file for test settings (instead of env vars only)
 
-## Completed
+## Completed (Recent)
+
+- Converted all 5 non-simple E2E test specs to use `data-testid` selectors and `fillAuthFields` helper
+- Implemented test isolation with database reset infrastructure (`/api/test/reset` endpoint)
+- Added `test.beforeAll(resetDatabase)` hooks to all non-simple E2E test suites
+- Configured Tailscale IP support (100.81.83.98) in vite.config.js, playwright.config.js, and qa-sandbox-fixes.js
+- Updated server/client to support configurable bind addresses via environment variables
+- Analyzed and documented project architecture (server, client, storage, sandbox)
+- Documented sandbox feature: chat interface, mock responses, rate limiting, personality styles
+- Created comprehensive Tailscale setup guide with quick start instructions
+
+## Completed (Previous Sessions)
 
 - Migrated client from CRA to Vite and updated build pipeline
 - Created systemd unit templates and installer scaffold
@@ -49,11 +66,14 @@
 - Implemented frontend smart inputs (TagInput, ChipSelect, StyleSelector)
 - Implemented Agent Sandbox (chat UI, mock responses, session persistence)
 - Implemented Ollama provider support and in-memory conversationService
-- Fixed Playwright install step in CI (`npx playwright install --with-deps`) and verified Docker Build & CI workflows
-- Added stable `data-testid` attributes and converted simple E2E tests to use `fillAuthFields` helper; local Playwright simple suite passes (21/21)
+- Fixed Playwright install step in CI (`npx playwright install --with-deps`)
+- Added stable `data-testid` attributes and converted simple E2E tests
+- All 21 simple E2E tests passing locally and in CI
 
-## Recently Completed (context)
+## Context
 
-- Added Ollama provider support and conversationService; updated frontend model selector; made Playwright install step robust (commit `8e9866f`).
-
-(End of file)
+- Tailscale IP: `100.81.83.98`
+- Server port: `5000` (configurable via PORT env var)
+- Client port: `3000` (configured in vite.config.js)
+- Test isolation: Implemented via `/api/test/reset` endpoint, called in test.beforeAll hooks
+- Environment-aware test routes: Only enabled when ENABLE_TEST_ROUTES=true or NODE_ENV=test
